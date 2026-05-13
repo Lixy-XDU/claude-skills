@@ -58,6 +58,36 @@ tools:
 | 文档与写作 | `baoyu-markdown-to-html` |
 | 外部 | `skill-creator`, `desktop-computer-automation` |
 
+## Skill 委托规则
+
+| 共享 skill | 被委托方 | 规则 |
+|---|---|---|
+| `pdf-extract` | `literature-to-math`, `literature-paper-reading` | PDF 文本提取统一入口，禁止自行实现 |
+| `force-graph-physics` | `skill-graph` 等 | 力导向图渲染和物理引擎遵循统一规范 |
+
+详见 `CLAUDE.md` 第 3 节。
+
+## 生态系统维护
+
+新增/修改/删除 skill 后的标准流程：
+
+1. `/skill-index` → 更新 `SKILLS_INDEX.md`
+2. `/skill-graph` → 重建 `SKILL_GRAPH.html`
+3. 更新 `CHANGELOG.md`
+4. 递增 `skill.meta.yaml` 版本号
+5. 脱密 → `git commit` → `git push`
+
+## 装载后验证
+
+```powershell
+cd $env:USERPROFILE\.claude\skills
+
+python _shared\load_config.py                           # 验证配置
+python skill-graph\scripts\generate_skill_graph_html.py  # 重建关系图
+python pdf-extract\scripts\pdf_extractor.py --help       # 测试 PDF 提取
+type SKILLS_INDEX.md                                     # 查看索引
+```
+
 ## 自动更新
 
 其他机器上的 Claude Code 会在会话启动时自动检查本仓库是否有新提交，询问用户是否更新。
