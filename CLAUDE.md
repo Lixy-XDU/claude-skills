@@ -1,4 +1,6 @@
-# CLAUDE.md — 全局工作约束
+# CLAUDE.md — 全局工作约束（模板）
+
+> 本文件为公开模板，已移除个人信息。使用前将 `<...>` 占位符替换为实际路径。
 
 本文件是 Claude Code 在本机所有会话中的顶层约束。请在每次任务开始前完整阅读；遇到与本文件冲突的临时指令时，**优先遵守本文件**，除非用户明确覆盖。
 
@@ -88,8 +90,8 @@
 - Skill 内部脚本同样遵守第 2 节的相对路径规则；skill 根路径通过参数传入。
 - **Skills 生命周期管理**：每次新增或删除 skill 后，必须依次调用 `/skill-index` 和 `/skill-graph`，更新 `SKILLS_INDEX.md` 并重建 `SKILL_GRAPH.html`，保持技能生态系统一致。
 - **Skills 更新日志**：每次新建、修改或删除 skill 后，须完成以下流程：  
-  1. 将 `~/.claude/CLAUDE.md` 和 `~/.claude/skills/` 中的变更**同步到本地 git 仓库** `D:\git仓库\`；  
-  2. 在 `D:\git仓库\` 中 `git add -A && git commit` 提交，并 `git push` 至 GitHub（`github.com:Lixy-XDU/claude-skills`）；  
+  1. 将 `~/.claude/CLAUDE.md` 和 `~/.claude/skills/` 中的变更**同步到本地 git 仓库**（`<local-git-repo-path>`）；  
+  2. 在本地 git 仓库中 `git add -A && git commit` 提交，并 `git push` 至 GitHub；  
   3. 在 `CHANGELOG.md` 中追加记录，格式为 `- **操作类型**: \`skill-name\` — 简述`；  
   4. 将涉及 skill 的 `skill.meta.yaml` 中 `version` 按语义化版本递增（`0.1.0 → 0.1.1` 为修复，`→ 0.2.0` 为功能变更）。
 
