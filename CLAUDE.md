@@ -88,7 +88,7 @@
 - **PDF 文本提取统一通过 `/pdf-extract` 或其脚本完成**。任何 skill 不得自行实现 PDF 解析逻辑（PyMuPDF / qpdf / OCR 等），必须委托给 `/pdf-extract`。调用脚本时注意 `python` / `py` 兼容性：先试 `python`，失败试 `py`。
 - **图模型可视化统一遵循 `/force-graph-physics` 的规则**。任何 skill 需要构建或修改交互式力导向图（SVG/Canvas 节点-边图）时，必须参考该 skill 的渲染性能规则、物理模拟规则、碰撞检测规则和反模式，不得自行摸索。
 - Skill 内部脚本同样遵守第 2 节的相对路径规则；skill 根路径通过参数传入。
-- **Skills 自动更新**：本文件及其 skills 库托管于 GitHub（`github.com:<your-username>/claude-skills`）。每次会话开始时，通过 `gh api` 或 `git ls-remote` 检查远端仓库是否有新提交。若有更新，询问用户是否同步；无更新则静默跳过。更新时仅同步 skills 和 CLAUDE.md 模板，不覆盖本机 `config.local.yaml` 等私有文件。  
+- **Skills 自动更新**：本文件及其 skills 库托管于 GitHub（`github.com:Lixy-XDU/claude-skills`）。每次会话开始时，通过 `gh api` 或 `git ls-remote` 检查远端仓库是否有新提交。若有更新，询问用户是否同步；无更新则静默跳过。更新时仅同步 skills 和 CLAUDE.md 模板，不覆盖本机 `config.local.yaml` 等私有文件。  
 - **Skills 生命周期管理**：每次新增或删除 skill 后，必须依次调用 `/skill-index` 和 `/skill-graph`，更新 `SKILLS_INDEX.md` 并重建 `SKILL_GRAPH.html`，保持技能生态系统一致。
 - **Skills 更新日志**：每次新建、修改或删除 skill 后，须完成以下流程：  
   1. 在本地 git 仓库中编辑或同步变更（**禁止**直接复制 `C:\Users\` 下的文件；必须同步时，须先脱密处理）；  
