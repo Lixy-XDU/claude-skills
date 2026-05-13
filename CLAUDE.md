@@ -87,7 +87,11 @@
 - **图模型可视化统一遵循 `/force-graph-physics` 的规则**。任何 skill 需要构建或修改交互式力导向图（SVG/Canvas 节点-边图）时，必须参考该 skill 的渲染性能规则、物理模拟规则、碰撞检测规则和反模式，不得自行摸索。
 - Skill 内部脚本同样遵守第 2 节的相对路径规则；skill 根路径通过参数传入。
 - **Skills 生命周期管理**：每次新增或删除 skill 后，必须依次调用 `/skill-index` 和 `/skill-graph`，更新 `SKILLS_INDEX.md` 并重建 `SKILL_GRAPH.html`，保持技能生态系统一致。
-- **Skills 更新日志**：每次新建、修改或删除 skill 后，**先将所有变更提交到 git 仓库**（`git add -A && git commit -m "..."`），然后在 skill 根目录下的 `CHANGELOG.md` 中追加记录。格式为 `- **操作类型**: \`skill-name\` — 简述`，操作类型包括 `新建`、`修改`、`删除`。同时将涉及 skill 的 `skill.meta.yaml` 中 `version` 字段按语义化版本递增（`0.1.0 → 0.1.1` 为修复，`→ 0.2.0` 为功能变更）。
+- **Skills 更新日志**：每次新建、修改或删除 skill 后，须完成以下流程：  
+  1. 将 `~/.claude/CLAUDE.md` 和 `~/.claude/skills/` 中的变更**同步到本地 git 仓库** `D:\git仓库\`；  
+  2. 在 `D:\git仓库\` 中 `git add -A && git commit` 提交，并 `git push` 至 GitHub（`github.com:Lixy-XDU/claude-skills`）；  
+  3. 在 `CHANGELOG.md` 中追加记录，格式为 `- **操作类型**: \`skill-name\` — 简述`；  
+  4. 将涉及 skill 的 `skill.meta.yaml` 中 `version` 按语义化版本递增（`0.1.0 → 0.1.1` 为修复，`→ 0.2.0` 为功能变更）。
 
 ---
 
