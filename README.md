@@ -1,16 +1,67 @@
 # Claude Code Skills & Global Constraints
 
-This repository contains my Claude Code global constraints (`CLAUDE.md`) and skill library (`skills/`).
+我的 Claude Code 全局约束和 skill 库。
 
-## Structure
+## 仓库结构
 
 ```
-CLAUDE.md          # Global work constraints (redacted for public)
-skills/            # Skill library (~14 skills across 6 categories)
+CLAUDE.md          # 全局约束（模板，使用时替换占位符）
+skills/            # 14 个 skill，6 个类别
+  ├── SKILL_GRAPH.html      # 关系图谱
+  ├── SKILLS_INDEX.md       # 技能索引
+  └── CHANGELOG.md          # 更新日志
 ```
 
-## Usage
+## 快速装载
 
-- `CLAUDE.md` is placed at `~/.claude/CLAUDE.md` for Claude Code to read as global instructions.
-- `skills/` is placed at `~/.claude/skills/` and contains individual skill definitions.
-- See `skills/` for the skill index and relationship graph.
+```powershell
+# 1. 克隆仓库
+git clone git@github.com:Lixy-XDU/claude-skills.git <local-path>
+
+# 2. 部署 CLAUDE.md
+Copy-Item <local-path>\CLAUDE.md $env:USERPROFILE\.claude\CLAUDE.md
+
+# 3. 部署 skills
+Copy-Item -Recurse <local-path>\skills $env:USERPROFILE\.claude\skills
+
+# 4. 配置本机环境
+cd $env:USERPROFILE\.claude\skills
+Copy-Item config.local.example.yaml config.local.yaml
+notepad config.local.yaml
+
+# 5. 安装依赖
+pip install pyyaml pymupdf pdf2image pillow pytesseract
+```
+
+## 配置 `config.local.yaml`
+
+```yaml
+paths:
+  papers_root:     "D:/Research/Papers"
+  obsidian_vault:  "D:/Obsidian/MainVault"
+  obsidian_inbox:  "D:/Obsidian/MainVault/00-Inbox"
+  math_method_lib: "D:/Obsidian/MainVault/20-MathMethods"
+
+tools:
+  qpdf:      "qpdf"
+  tesseract: "tesseract"
+```
+
+## Skill 类别
+
+| 类别 | Skill |
+|---|---|
+| 元技能 | `skill-index`, `skill-graph`, `skill-distiller`, `find-local-skills`, `find-skills` |
+| 数学与方法库 | `math-method-lib`, `literature-to-math`, `literature-paper-reading` |
+| 工具 | `pdf-extract`, `force-graph-physics` |
+| 设计与界面 | `matlab-traditional-gui` |
+| 文档与写作 | `baoyu-markdown-to-html` |
+| 外部 | `skill-creator`, `desktop-computer-automation` |
+
+## 自动更新
+
+其他机器上的 Claude Code 会在会话启动时自动检查本仓库是否有新提交，询问用户是否更新。
+
+## 贡献
+
+本仓库的 master 副本位于作者本机（私有），所有更新以本机为准，经脱密后推送至此。
