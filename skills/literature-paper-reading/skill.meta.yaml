@@ -1,0 +1,28 @@
+name: literature-paper-reading
+title: 论文系统阅读
+category: 数学与方法库
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-14
+
+purpose: 按 10 维度框架系统性阅读学术论文，产出结构化 Obsidian 阅读笔记。覆盖基本信息、研究背景、核心观点、理论基础、方法、论证逻辑、结果、创新点、局限、启发。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - literature-to-math
+  upstream:
+    - pdf-extract
+  downstream: []
+  should_run_before: []
+  should_run_after:
+    - pdf-extract
+    - literature-to-math
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 与 literature-to-math 同属 literature- 前缀家族。PDF 文本提取委托给 pdf-extract（三级策略：PyMuPDF → qpdf 解密 → OCR）。
+  - 协作顺序：pdf-extract（提取文本）→ literature-paper-reading（全文理解）→ literature-to-math（数学方法提取）→ math-method-lib（入库）。
+  - 论文阅读产出的方法名称可作为 math-method-lib 的候选输入。

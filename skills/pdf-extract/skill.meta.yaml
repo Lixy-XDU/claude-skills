@@ -1,0 +1,30 @@
+name: pdf-extract
+title: PDF 文本提取
+category: 工具
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-14
+
+purpose: 从 PDF 文件中提取纯文本，支持加密 PDF（qpdf 解密）与扫描版 OCR。三级策略：PyMuPDF 直接提取 → qpdf 解密 → tesseract OCR。供其他 skill 委托调用，禁止各 skill 自行实现 PDF 解析。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - literature-to-math
+    - literature-paper-reading
+  upstream: []
+  downstream:
+    - literature-to-math
+    - literature-paper-reading
+  should_run_before:
+    - literature-paper-reading
+    - literature-to-math
+  should_run_after: []
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 工具型 skill，通常由其他 skill 内部调用而非用户直接触发。disable-model-invocation: true。
+  - 所有需要 PDF 文本的 skill 应通过本 skill 提取，不得自行实现 PyMuPDF / qpdf / OCR。
+  - 依赖 _shared/load_config.py 读取 config.local.yaml 中的 tools.qpdf / tools.tesseract 路径。

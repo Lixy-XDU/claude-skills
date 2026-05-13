@@ -1,0 +1,36 @@
+name: skill-index
+title: Skills Index
+category: 元技能
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-12
+
+purpose: Coordinate, categorize, route, audit, and maintain local Claude Code skills. Use when the user wants to decide which skill to use, organize skills by function, update the skill index, coordinate find-local-skills, find-skills, and skill-distiller, or prevent local skill sprawl.
+
+relations:
+  coordinates:
+    - find-local-skills
+    - find-skills
+    - skill-distiller
+    - skill-graph
+    - skill-creator
+  cooperates_with:
+    - skill-graph
+  upstream:
+    - find-local-skills
+    - skill-distiller
+    - skill-graph
+    - skill-creator
+  downstream: []
+  should_run_before: []
+  should_run_after:
+    - find-local-skills
+    - skill-distiller
+    - skill-creator
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - Governs taxonomy, routing, and conflict resolution for all local skills.
+  - Maintains SKILLS_INDEX.md.

@@ -1,0 +1,29 @@
+name: literature-to-math
+title: 文献数学方法提炼器
+category: 数学与方法库
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-12
+
+purpose: 从学术文献 PDF 中提取数学方法，调用 /math-method-lib 结构化写入 Obsidian 知识库。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - math-method-lib
+    - pdf-extract
+  upstream:
+    - math-method-lib
+    - pdf-extract
+  downstream:
+    - math-method-lib
+  should_run_before: []
+  should_run_after:
+    - pdf-extract
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 依赖 math-method-lib 完成 16 节模板生成。PDF 文本提取委托给 pdf-extract（三级策略：PyMuPDF → qpdf 解密 → OCR）。
+  - category 由 skill-graph 通过关键词推断为"数学与方法库"。

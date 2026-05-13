@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Code Skill 关系图</title>
+<style>
+:root {
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --border: #e5e7eb;
+  --accent: #2563eb;
+  --accent-soft: #dbeafe;
+  --danger: #dc2626;
+  --warn: #d97706;
+  --ok: #059669;
+  --shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", "Noto Sans CJK SC", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+header { padding: 22px 28px 14px; }
+h1 { margin: 0 0 8px; font-size: 26px; }
+.sub { color: var(--muted); font-size: 13px; }
+.toolbar {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, minmax(140px, 0.5fr));
+  gap: 10px;
+  padding: 12px 28px 18px;
+}
+input, select {
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: 300px 1fr 360px;
+  gap: 14px;
+  padding: 0 28px 28px;
+  min-height: calc(100vh - 160px);
+}
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel h2 {
+  font-size: 15px;
+  margin: 0;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: #fafafa;
+}
+.list {
+  max-height: calc(100vh - 230px);
+  overflow: auto;
+}
+.item {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.item:hover, .item.active { background: var(--accent-soft); }
+.item .name { font-weight: 700; font-size: 14px; }
+.item .meta { color: var(--muted); font-size: 12px; margin-top: 4px; }
+.graph-wrap {
+  height: calc(100vh - 210px);
+  min-height: 540px;
+  position: relative;
+}
+svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background:
+    radial-gradient(circle at 20px 20px, rgba(37, 99, 235, 0.05) 2px, transparent 2px);
+  background-size: 36px 36px;
+}
+.edge {
+  stroke: #94a3b8;
+  stroke-width: 1.5;
+  marker-end: url(#arrow);
+}
+.edge.highlight { stroke: var(--accent); stroke-width: 3; }
+.edge-label {
+  font-size: 11px;
+  fill: #475569;
+  paint-order: stroke;
+  stroke: white;
+  stroke-width: 4px;
+  stroke-linejoin: round;
+}
+.node circle {
+  fill: white;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.node.meta circle { fill: #eff6ff; stroke: #2563eb; }
+.node.domain circle { fill: #f0fdf4; stroke: #16a34a; }
+.node.warn circle { fill: #fffbeb; stroke: #d97706; }
+.node.selected circle { stroke: #dc2626; stroke-width: 4; }
+.node text {
+  font-size: 12px;
+  font-weight: 700;
+  fill: var(--text);
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+.detail {
+  padding: 14px 16px 18px;
+  overflow: auto;
+  max-height: calc(100vh - 230px);
+}
+.badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: #1d4ed8;
+  font-size: 12px;
+  margin: 3px 4px 3px 0;
+}
+.badge.gray { background: #f3f4f6; color: #374151; }
+.badge.green { background: #dcfce7; color: #166534; }
+.badge.warn { background: #fef3c7; color: #92400e; }
+.kv { margin: 10px 0; }
+.kv strong { display: block; font-size: 12px; color: var(--muted); margin-bottom: 3px; }
+.kv code { background: #f3f4f6; padding: 2px 5px; border-radius: 6px; }
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th, .table td { border-bottom: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; }
+.notice { margin: 12px 0; padding: 10px 12px; border-radius: 10px; background: #fff7ed; color: #9a3412; font-size: 13px; }
+.footer-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 0 28px 28px; }
+.small { font-size: 13px; color: var(--muted); }
+@media (max-width: 1100px) {
+  .layout { grid-template-columns: 1fr; }
+  .toolbar { grid-template-columns: 1fr 1fr; }
+  .graph-wrap { height: 620px; }
+  .footer-panels { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Claude Code Skill 关系图</h1>
+  <div class="sub">
+    生成时间：<span id="generated"></span>　
+    根目录：<code id="root"></code>　
+    节点：<span id="nodeCount"></span>　
+    关系：<span id="edgeCount"></span>
+  </div>
+</header>
+
+<section class="toolbar">
+  <input id="search" placeholder="搜索 skill 名称、用途、分类……">
+  <select id="category"></select>
+  <select id="scope"></select>
+  <select id="status"></select>
+</section>
+
+<main class="layout">
+  <aside class="panel">
+    <h2>Skill 列表</h2>
+    <div id="skillList" class="list"></div>
+  </aside>
+
+  <section class="panel">
+    <h2>关系网络</h2>
+    <div class="graph-wrap">
+      <svg id="graph" role="img" aria-label="Skill 关系图"></svg>
+    </div>
+  </section>
+
+  <aside class="panel">
+    <h2>节点详情</h2>
+    <div id="detail" class="detail small">点击左侧列表或图中的节点查看详情。</div>
+  </aside>
+</main>
+
+<section class="footer-panels">
+  <section class="panel">
+    <h2>警告</h2>
+    <div id="warnings" class="detail"></div>
+  </section>
+  <section class="panel">
+    <h2>孤立节点</h2>
+    <div id="isolated" class="detail"></div>
+  </section>
+</section>
+
+<script id="skill-data" type="application/json">{&quot;generated&quot;: &quot;2026-05-12&quot;, &quot;root&quot;: &quot;/mnt/data/skill-graph/_sample_skills&quot;, &quot;nodes&quot;: [{&quot;name&quot;: &quot;find-local-skills&quot;, &quot;title&quot;: &quot;find-local-skills&quot;, &quot;category&quot;: &quot;元技能&quot;, &quot;scope&quot;: &quot;unknown&quot;, &quot;status&quot;: &quot;active&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;updated&quot;: &quot;2026-05-12&quot;, &quot;purpose&quot;: &quot;Find, list, inspect, compare, and recommend local Claude Code skills.&quot;, &quot;relations&quot;: {&quot;coordinates&quot;: [], &quot;cooperates_with&quot;: [], &quot;upstream&quot;: [], &quot;downstream&quot;: [&quot;skill-distiller&quot;, &quot;skill-index&quot;, &quot;skill-graph&quot;], &quot;should_run_before&quot;: [&quot;skill-distiller&quot;, &quot;skill-index&quot;], &quot;should_run_after&quot;: [], &quot;supersedes&quot;: [], &quot;overlaps_with&quot;: []}, &quot;notes&quot;: [&quot;自动生成的 metadata。建议手工检查 category、purpose 和 relations。&quot;], &quot;_dir&quot;: &quot;/mnt/data/skill-graph/_sample_skills/find-local-skills&quot;, &quot;_path&quot;: &quot;/mnt/data/skill-graph/_sample_skills/find-local-skills/skill.meta.yaml&quot;}, {&quot;name&quot;: &quot;find-skills&quot;, &quot;title&quot;: &quot;find-skills&quot;, &quot;category&quot;: &quot;元技能&quot;, &quot;scope&quot;: &quot;unknown&quot;, &quot;status&quot;: &quot;active&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;updated&quot;: &quot;2026-05-12&quot;, &quot;purpose&quot;: &quot;Search external/community skills when local skills are insufficient.&quot;, &quot;relations&quot;: {&quot;coordinates&quot;: [], &quot;cooperates_with&quot;: [], &quot;upstream&quot;: [], &quot;downstream&quot;: [&quot;skill-distiller&quot;, &quot;skill-index&quot;], &quot;should_run_before&quot;: [&quot;skill-distiller&quot;], &quot;should_run_after&quot;: [], &quot;supersedes&quot;: [], &quot;overlaps_with&quot;: []}, &quot;notes&quot;: [&quot;自动生成的 metadata。建议手工检查 category、purpose 和 relations。&quot;], &quot;_dir&quot;: &quot;/mnt/data/skill-graph/_sample_skills/find-skills&quot;, &quot;_path&quot;: &quot;/mnt/data/skill-graph/_sample_skills/find-skills/skill.meta.yaml&quot;}, {&quot;name&quot;: &quot;math-method-lib&quot;, &quot;title&quot;: &quot;math-method-lib&quot;, &quot;category&quot;: &quot;数学与方法库&quot;, &quot;scope&quot;: &quot;unknown&quot;, &quot;status&quot;: &quot;active&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;updated&quot;: &quot;2026-05-12&quot;, &quot;purpose&quot;: &quot;Maintain mathematical methods, formulas, derivations, and reusable problem-solving patterns.&quot;, &quot;relations&quot;: {&quot;coordinates&quot;: [], &quot;cooperates_with&quot;: [], &quot;upstream&quot;: [], &quot;downstream&quot;: [], &quot;should_run_before&quot;: [], &quot;should_run_after&quot;: [], &quot;supersedes&quot;: [], &quot;overlaps_with&quot;: []}, &quot;notes&quot;: [&quot;自动生成的 metadata。建议手工检查 category、purpose 和 relations。&quot;], &quot;_dir&quot;: &quot;/mnt/data/skill-graph/_sample_skills/math-method-lib&quot;, &quot;_path&quot;: &quot;/mnt/data/skill-graph/_sample_skills/math-method-lib/skill.meta.yaml&quot;}, {&quot;name&quot;: &quot;matlab-traditional-gui&quot;, &quot;title&quot;: &quot;matlab-traditional-gui&quot;, &quot;category&quot;: &quot;规划与评审&quot;, &quot;scope&quot;: &quot;unknown&quot;, &quot;status&quot;: &quot;active&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;updated&quot;: &quot;2026-05-12&quot;, &quot;purpose&quot;: &quot;Build, refactor, or review MATLAB traditional GUI code using figure and uicontrol.&quot;, &quot;relations&quot;: {&quot;coordinates&quot;: [], &quot;cooperates_with&quot;: [], &quot;upstream&quot;: [], &quot;downstream&quot;: [], &quot;should_run_before&quot;: [], &quot;should_run_after&quot;: [], &quot;supersedes&quot;: [], &quot;overlaps_with&quot;: []}, &quot;notes&quot;: [&quot;自动生成的 metadata。建议手工检查 category、purpose 和 relations。&quot;], &quot;_dir&quot;: &quot;/mnt/data/skill-graph/_sample_skills/matlab-traditional-gui&quot;, &quot;_path&quot;: &quot;/mnt/data/skill-graph/_sample_skills/matlab-traditional-gui/skill.meta.yaml&quot;}, {&quot;name&quot;: &quot;skill-distiller&quot;, &quot;title&quot;: &quot;skill-distiller&quot;, &quot;category&quot;: &quot;元技能&quot;, &quot;scope&quot;: &quot;unknown&quot;, &quot;status&quot;: &quot;active&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;updated&quot;: &quot;2026-05-12&quot;, &quot;purpose&quot;: &quot;Convert work experience into focused Claude Code SKILL.md files.&quot;, &quot;relations&quot;: {&quot;coordinates&quot;: [], &quot;cooperates_with&quot;: [], &quot;upstream&quot;: [&quot;find-local-skills&quot;, &quot;find-skills&quot;], &quot;downstream&quot;: [&quot;skill-index&quot;, &quot;skill-graph&quot;], &quot;should_run_before&quot;: [&quot;skill-index&quot;, &quot;skill-graph&quot;], &quot;should_run_after&quot;: [&quot;find-local-skills&quot;], &quot;supersedes&quot;: [], &quot;overlaps_with&quot;: []}, &quot;notes&quot;: [&quot;自动生成的 metadata。建议手工检查 category、purpose 和 relations。&quot;], &quot;_dir&quot;: &quot;/mnt/data/skill-graph/_sample_skills/skill-distiller&quot;, &quot;_path&quot;: &quot;/mnt/data/skill-graph/_sample_skills/skill-distiller/skill.meta.yaml&quot;}, {&quot;name&quot;: &quot;skill-graph&quot;, &quot;title&quot;: &quot;skill-graph&quot;, &quot;category&quot;: &quot;元技能&quot;, &quot;scope&quot;: &quot;unknown&quot;, &quot;status&quot;: &quot;active&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;updated&quot;: &quot;2026-05-12&quot;, &quot;purpose&quot;: &quot;Generate Chinese HTML relationship maps for local Claude Code skills.&quot;, &quot;relations&quot;: {&quot;coordinates&quot;: [], &quot;cooperates_with&quot;: [&quot;skill-index&quot;, &quot;find-local-skills&quot;, &quot;skill-distiller&quot;], &quot;upstream&quot;: [&quot;find-local-skills&quot;, &quot;skill-distiller&quot;], &quot;downstream&quot;: [&quot;skill-index&quot;], &quot;should_run_before&quot;: [], &quot;should_run_after&quot;: [&quot;skill-distiller&quot;, &quot;find-local-skills&quot;], &quot;supersedes&quot;: [], &quot;overlaps_with&quot;: []}, &quot;notes&quot;: [&quot;自动生成的 metadata。建议手工检查 category、purpose 和 relations。&quot;], &quot;_dir&quot;: &quot;/mnt/data/skill-graph/_sample_skills/skill-graph&quot;, &quot;_path&quot;: &quot;/mnt/data/skill-graph/_sample_skills/skill-graph/skill.meta.yaml&quot;}, {&quot;name&quot;: &quot;skill-index&quot;, &quot;title&quot;: &quot;skill-index&quot;, &quot;category&quot;: &quot;元技能&quot;, &quot;scope&quot;: &quot;unknown&quot;, &quot;status&quot;: &quot;active&quot;, &quot;version&quot;: &quot;0.1.0&quot;, &quot;updated&quot;: &quot;2026-05-12&quot;, &quot;purpose&quot;: &quot;Route, categorize, coordinate, and govern the local skill system.&quot;, &quot;relations&quot;: {&quot;coordinates&quot;: [&quot;find-local-skills&quot;, &quot;find-skills&quot;, &quot;skill-distiller&quot;, &quot;skill-graph&quot;], &quot;cooperates_with&quot;: [], &quot;upstream&quot;: [&quot;find-local-skills&quot;, &quot;find-skills&quot;, &quot;skill-distiller&quot;, &quot;skill-graph&quot;], &quot;downstream&quot;: [], &quot;should_run_before&quot;: [], &quot;should_run_after&quot;: [&quot;find-local-skills&quot;, &quot;skill-distiller&quot;, &quot;skill-graph&quot;], &quot;supersedes&quot;: [], &quot;overlaps_with&quot;: []}, &quot;notes&quot;: [&quot;自动生成的 metadata。建议手工检查 category、purpose 和 relations。&quot;], &quot;_dir&quot;: &quot;/mnt/data/skill-graph/_sample_skills/skill-index&quot;, &quot;_path&quot;: &quot;/mnt/data/skill-graph/_sample_skills/skill-index/skill.meta.yaml&quot;}], &quot;edges&quot;: [{&quot;source&quot;: &quot;find-local-skills&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;downstream&quot;, &quot;label&quot;: &quot;下游&quot;}, {&quot;source&quot;: &quot;find-local-skills&quot;, &quot;target&quot;: &quot;skill-index&quot;, &quot;type&quot;: &quot;downstream&quot;, &quot;label&quot;: &quot;下游&quot;}, {&quot;source&quot;: &quot;find-local-skills&quot;, &quot;target&quot;: &quot;skill-graph&quot;, &quot;type&quot;: &quot;downstream&quot;, &quot;label&quot;: &quot;下游&quot;}, {&quot;source&quot;: &quot;find-local-skills&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;should_run_before&quot;, &quot;label&quot;: &quot;先于&quot;}, {&quot;source&quot;: &quot;find-local-skills&quot;, &quot;target&quot;: &quot;skill-index&quot;, &quot;type&quot;: &quot;should_run_before&quot;, &quot;label&quot;: &quot;先于&quot;}, {&quot;source&quot;: &quot;find-skills&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;downstream&quot;, &quot;label&quot;: &quot;下游&quot;}, {&quot;source&quot;: &quot;find-skills&quot;, &quot;target&quot;: &quot;skill-index&quot;, &quot;type&quot;: &quot;downstream&quot;, &quot;label&quot;: &quot;下游&quot;}, {&quot;source&quot;: &quot;find-skills&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;should_run_before&quot;, &quot;label&quot;: &quot;先于&quot;}, {&quot;source&quot;: &quot;skill-distiller&quot;, &quot;target&quot;: &quot;find-local-skills&quot;, &quot;type&quot;: &quot;upstream&quot;, &quot;label&quot;: &quot;上游&quot;}, {&quot;source&quot;: &quot;skill-distiller&quot;, &quot;target&quot;: &quot;find-skills&quot;, &quot;type&quot;: &quot;upstream&quot;, &quot;label&quot;: &quot;上游&quot;}, {&quot;source&quot;: &quot;skill-distiller&quot;, &quot;target&quot;: &quot;skill-index&quot;, &quot;type&quot;: &quot;downstream&quot;, &quot;label&quot;: &quot;下游&quot;}, {&quot;source&quot;: &quot;skill-distiller&quot;, &quot;target&quot;: &quot;skill-graph&quot;, &quot;type&quot;: &quot;downstream&quot;, &quot;label&quot;: &quot;下游&quot;}, {&quot;source&quot;: &quot;skill-distiller&quot;, &quot;target&quot;: &quot;skill-index&quot;, &quot;type&quot;: &quot;should_run_before&quot;, &quot;label&quot;: &quot;先于&quot;}, {&quot;source&quot;: &quot;skill-distiller&quot;, &quot;target&quot;: &quot;skill-graph&quot;, &quot;type&quot;: &quot;should_run_before&quot;, &quot;label&quot;: &quot;先于&quot;}, {&quot;source&quot;: &quot;skill-distiller&quot;, &quot;target&quot;: &quot;find-local-skills&quot;, &quot;type&quot;: &quot;should_run_after&quot;, &quot;label&quot;: &quot;后于&quot;}, {&quot;source&quot;: &quot;skill-graph&quot;, &quot;target&quot;: &quot;skill-index&quot;, &quot;type&quot;: &quot;cooperates_with&quot;, &quot;label&quot;: &quot;协同&quot;}, {&quot;source&quot;: &quot;skill-graph&quot;, &quot;target&quot;: &quot;find-local-skills&quot;, &quot;type&quot;: &quot;cooperates_with&quot;, &quot;label&quot;: &quot;协同&quot;}, {&quot;source&quot;: &quot;skill-graph&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;cooperates_with&quot;, &quot;label&quot;: &quot;协同&quot;}, {&quot;source&quot;: &quot;skill-graph&quot;, &quot;target&quot;: &quot;find-local-skills&quot;, &quot;type&quot;: &quot;upstream&quot;, &quot;label&quot;: &quot;上游&quot;}, {&quot;source&quot;: &quot;skill-graph&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;upstream&quot;, &quot;label&quot;: &quot;上游&quot;}, {&quot;source&quot;: &quot;skill-graph&quot;, &quot;target&quot;: &quot;skill-index&quot;, &quot;type&quot;: &quot;downstream&quot;, &quot;label&quot;: &quot;下游&quot;}, {&quot;source&quot;: &quot;skill-graph&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;should_run_after&quot;, &quot;label&quot;: &quot;后于&quot;}, {&quot;source&quot;: &quot;skill-graph&quot;, &quot;target&quot;: &quot;find-local-skills&quot;, &quot;type&quot;: &quot;should_run_after&quot;, &quot;label&quot;: &quot;后于&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;find-local-skills&quot;, &quot;type&quot;: &quot;coordinates&quot;, &quot;label&quot;: &quot;协调&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;find-skills&quot;, &quot;type&quot;: &quot;coordinates&quot;, &quot;label&quot;: &quot;协调&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;coordinates&quot;, &quot;label&quot;: &quot;协调&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;skill-graph&quot;, &quot;type&quot;: &quot;coordinates&quot;, &quot;label&quot;: &quot;协调&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;find-local-skills&quot;, &quot;type&quot;: &quot;upstream&quot;, &quot;label&quot;: &quot;上游&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;find-skills&quot;, &quot;type&quot;: &quot;upstream&quot;, &quot;label&quot;: &quot;上游&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;upstream&quot;, &quot;label&quot;: &quot;上游&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;skill-graph&quot;, &quot;type&quot;: &quot;upstream&quot;, &quot;label&quot;: &quot;上游&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;find-local-skills&quot;, &quot;type&quot;: &quot;should_run_after&quot;, &quot;label&quot;: &quot;后于&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;skill-distiller&quot;, &quot;type&quot;: &quot;should_run_after&quot;, &quot;label&quot;: &quot;后于&quot;}, {&quot;source&quot;: &quot;skill-index&quot;, &quot;target&quot;: &quot;skill-graph&quot;, &quot;type&quot;: &quot;should_run_after&quot;, &quot;label&quot;: &quot;后于&quot;}], &quot;warnings&quot;: [], &quot;isolated&quot;: [&quot;math-method-lib&quot;, &quot;matlab-traditional-gui&quot;], &quot;categories&quot;: [&quot;元技能&quot;, &quot;规划与评审&quot;, &quot;数学与方法库&quot;], &quot;scopes&quot;: [&quot;unknown&quot;], &quot;statuses&quot;: [&quot;active&quot;], &quot;relationLabels&quot;: {&quot;coordinates&quot;: &quot;协调&quot;, &quot;cooperates_with&quot;: &quot;协同&quot;, &quot;upstream&quot;: &quot;上游&quot;, &quot;downstream&quot;: &quot;下游&quot;, &quot;should_run_before&quot;: &quot;先于&quot;, &quot;should_run_after&quot;: &quot;后于&quot;, &quot;supersedes&quot;: &quot;替代&quot;, &quot;overlaps_with&quot;: &quot;重叠&quot;}}</script>
+<script>
+const DATA = JSON.parse(document.getElementById("skill-data").textContent);
+let selected = null;
+
+const el = (id) => document.getElementById(id);
+
+el("generated").textContent = DATA.generated;
+el("root").textContent = DATA.root;
+el("nodeCount").textContent = DATA.nodes.length;
+el("edgeCount").textContent = DATA.edges.length;
+
+function optionList(select, label, values) {
+  select.innerHTML = "";
+  const all = document.createElement("option");
+  all.value = "";
+  all.textContent = label;
+  select.appendChild(all);
+  values.forEach(v => {
+    const o = document.createElement("option");
+    o.value = v;
+    o.textContent = v;
+    select.appendChild(o);
+  });
+}
+
+optionList(el("category"), "全部分类", DATA.categories);
+optionList(el("scope"), "全部范围", DATA.scopes);
+optionList(el("status"), "全部状态", DATA.statuses);
+
+function getFilters() {
+  return {
+    q: el("search").value.trim().toLowerCase(),
+    category: el("category").value,
+    scope: el("scope").value,
+    status: el("status").value,
+  };
+}
+
+function visibleNodes() {
+  const f = getFilters();
+  return DATA.nodes.filter(n => {
+    const hay = [n.name, n.title, n.category, n.scope, n.status, n.purpose].join(" ").toLowerCase();
+    if (f.q && !hay.includes(f.q)) return false;
+    if (f.category && n.category !== f.category) return false;
+    if (f.scope && n.scope !== f.scope) return false;
+    if (f.status && n.status !== f.status) return false;
+    return true;
+  });
+}
+
+function renderList(nodes) {
+  const box = el("skillList");
+  box.innerHTML = "";
+  nodes.forEach(n => {
+    const div = document.createElement("div");
+    div.className = "item" + (selected === n.name ? " active" : "");
+    div.innerHTML = `
+      <div class="name">/${escapeHtml(n.name)}</div>
+      <div class="meta">${escapeHtml(n.category || "未分类")} · ${escapeHtml(n.scope || "unknown")} · ${escapeHtml(n.status || "")}</div>
+      <div class="meta">${escapeHtml(truncate(n.purpose || "", 74))}</div>
+    `;
+    div.onclick = () => {
+      selected = n.name;
+      render();
+    };
+    box.appendChild(div);
+  });
+}
+
+function relationRows(n) {
+  const rel = n.relations || {};
+  let rows = [];
+  Object.entries(DATA.relationLabels).forEach(([key, label]) => {
+    const arr = rel[key] || [];
+    if (arr.length) {
+      rows.push(`<tr><td>${escapeHtml(label)}</td><td>${arr.map(x => `<code>/${escapeHtml(x)}</code>`).join(" ")}</td></tr>`);
+    }
+  });
+  if (!rows.length) return `<div class="small">暂无显式关系。</div>`;
+  return `<table class="table"><tbody>${rows.join("")}</tbody></table>`;
+}
+
+function renderDetail() {
+  const node = DATA.nodes.find(n => n.name === selected);
+  if (!node) {
+    el("detail").innerHTML = "点击左侧列表或图中的节点查看详情。";
+    return;
+  }
+  const notes = node.notes && node.notes.length
+    ? `<ul>${node.notes.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+    : `<div class="small">无备注。</div>`;
+
+  el("detail").innerHTML = `
+    <h3>/${escapeHtml(node.name)}</h3>
+    <div>
+      <span class="badge">${escapeHtml(node.category || "未分类")}</span>
+      <span class="badge gray">${escapeHtml(node.scope || "unknown")}</span>
+      <span class="badge green">${escapeHtml(node.status || "unknown")}</span>
+      <span class="badge gray">v${escapeHtml(node.version || "")}</span>
+    </div>
+    <div class="kv"><strong>标题</strong>${escapeHtml(node.title || "")}</div>
+    <div class="kv"><strong>用途</strong>${escapeHtml(node.purpose || "")}</div>
+    <div class="kv"><strong>更新时间</strong>${escapeHtml(node.updated || "")}</div>
+    <div class="kv"><strong>路径</strong><code>${escapeHtml(node._dir || "")}</code></div>
+    <div class="kv"><strong>Metadata</strong><code>${escapeHtml(node._path || "")}</code></div>
+    <div class="kv"><strong>关系</strong>${relationRows(node)}</div>
+    <div class="kv"><strong>备注</strong>${notes}</div>
+  `;
+}
+
+function renderWarnings() {
+  const box = el("warnings");
+  if (!DATA.warnings.length) {
+    box.innerHTML = `<span class="badge green">没有发现关系警告</span>`;
+    return;
+  }
+  box.innerHTML = DATA.warnings.map(w => `<div class="notice">${escapeHtml(w)}</div>`).join("");
+}
+
+function renderIsolated() {
+  const box = el("isolated");
+  if (!DATA.isolated.length) {
+    box.innerHTML = `<span class="badge green">没有孤立节点</span>`;
+    return;
+  }
+  box.innerHTML = DATA.isolated.map(n => `<span class="badge warn">/${escapeHtml(n)}</span>`).join("");
+}
+
+function renderGraph(nodes) {
+  const svg = el("graph");
+  svg.innerHTML = `
+    <defs>
+      <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8"></path>
+      </marker>
+    </defs>
+  `;
+
+  const visible = new Set(nodes.map(n => n.name));
+  const edges = DATA.edges.filter(e => visible.has(e.source) && visible.has(e.target));
+
+  const w = svg.clientWidth || 800;
+  const h = svg.clientHeight || 600;
+  const cx = w / 2;
+  const cy = h / 2;
+  const radius = Math.max(160, Math.min(w, h) * 0.36);
+
+  const pos = new Map();
+  nodes.forEach((n, i) => {
+    const angle = (Math.PI * 2 * i) / Math.max(nodes.length, 1) - Math.PI / 2;
+    const r = nodes.length <= 1 ? 0 : radius;
+    pos.set(n.name, {
+      x: cx + Math.cos(angle) * r,
+      y: cy + Math.sin(angle) * r,
+    });
+  });
+
+  edges.forEach(e => {
+    const a = pos.get(e.source);
+    const b = pos.get(e.target);
+    if (!a || !b) return;
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+    line.setAttribute("x1", a.x);
+    line.setAttribute("y1", a.y);
+    line.setAttribute("x2", b.x);
+    line.setAttribute("y2", b.y);
+    line.setAttribute("class", "edge" + (selected && (e.source === selected || e.target === selected) ? " highlight" : ""));
+    svg.appendChild(line);
+
+    const tx = (a.x + b.x) / 2;
+    const ty = (a.y + b.y) / 2;
+    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    label.setAttribute("x", tx);
+    label.setAttribute("y", ty - 4);
+    label.setAttribute("class", "edge-label");
+    label.textContent = e.label;
+    svg.appendChild(label);
+  });
+
+  nodes.forEach(n => {
+    const p = pos.get(n.name);
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const isMeta = n.category === "元技能";
+    const isWarn = DATA.isolated.includes(n.name);
+    g.setAttribute("class", "node " + (isMeta ? "meta " : "domain ") + (isWarn ? "warn " : "") + (selected === n.name ? "selected" : ""));
+    g.setAttribute("transform", `translate(${p.x},${p.y})`);
+    g.style.cursor = "pointer";
+    g.onclick = () => {
+      selected = n.name;
+      render();
+    };
+
+    const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+    circle.setAttribute("r", isMeta ? "48" : "42");
+    g.appendChild(circle);
+
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    const label = "/" + n.name;
+    text.textContent = label.length > 20 ? label.slice(0, 19) + "…" : label;
+    g.appendChild(text);
+
+    const title = document.createElementNS("http://www.w3.org/2000/svg", "title");
+    title.textContent = "/" + n.name + "\n" + (n.purpose || "");
+    g.appendChild(title);
+
+    svg.appendChild(g);
+  });
+}
+
+function render() {
+  const nodes = visibleNodes();
+  if (selected && !nodes.some(n => n.name === selected)) selected = null;
+  renderList(nodes);
+  renderGraph(nodes);
+  renderDetail();
+  renderWarnings();
+  renderIsolated();
+}
+
+function escapeHtml(s) {
+  return String(s ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function truncate(s, n) {
+  s = String(s ?? "");
+  return s.length > n ? s.slice(0, n - 1) + "…" : s;
+}
+
+["search", "category", "scope", "status"].forEach(id => {
+  el(id).addEventListener("input", render);
+  el(id).addEventListener("change", render);
+});
+
+window.addEventListener("resize", () => renderGraph(visibleNodes()));
+
+render();
+</script>
+</body>
+</html>

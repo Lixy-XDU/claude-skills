@@ -1,0 +1,22 @@
+name: matlab-traditional-gui
+title: MATLAB Traditional GUI Development
+category: 设计与界面
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-12
+
+purpose: Build, refactor, or review MATLAB traditional GUI code using figure, uicontrol, uipanel, normalized layout, SizeChangedFcn, UserData, and nested callbacks. Use for R2025b-compatible GUI work, especially when avoiding uifigure due to Windows text scaling issues.
+
+relations:
+  coordinates: []
+  cooperates_with: []
+  upstream: []
+  downstream: []
+  should_run_before: []
+  should_run_after: []
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - Auto-generated metadata. Review category, purpose, and relationships.

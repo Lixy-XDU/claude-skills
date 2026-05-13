@@ -1,0 +1,23 @@
+name: math-method-lib
+title: 数学方法库管理
+category: 数学与方法库
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-12
+
+purpose: Add or edit entries in the mathematical methods library (数学方法库). Use when creating, expanding, or reviewing a mathematical method note that follows the 16-section Obsidian template.
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - literature-to-math
+  upstream: []
+  downstream: []
+  should_run_before: []
+  should_run_after: []
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - Auto-generated metadata. Review category, purpose, and relationships.

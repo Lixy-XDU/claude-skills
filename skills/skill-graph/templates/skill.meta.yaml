@@ -1,0 +1,22 @@
+name: skill-name
+title: Skill Title
+category: 未分类
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-12
+
+purpose: 一句话说明这个 skill 的用途。
+
+relations:
+  coordinates: []
+  cooperates_with: []
+  upstream: []
+  downstream: []
+  should_run_before: []
+  should_run_after: []
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 只写能帮助理解关系图的简短备注。

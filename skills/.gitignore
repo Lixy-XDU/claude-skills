@@ -1,0 +1,11 @@
+# 本机配置
+config.local.yaml
+
+# 生成产物
+SKILL_GRAPH.html
+**/_extracted/
+**/__pycache__/
+**/*.pyc
+
+# 虚拟环境
+.venv/

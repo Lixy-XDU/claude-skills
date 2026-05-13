@@ -1,0 +1,22 @@
+name: desktop-computer-automation
+title: Desktop Computer Automation
+category: 未分类
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-12
+
+purpose: Vision-driven desktop automation using Midscene. Control desktop (macOS, Windows, Linux) with natural language commands.
+
+relations:
+  coordinates: []
+  cooperates_with: []
+  upstream: []
+  downstream: []
+  should_run_before: []
+  should_run_after: []
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - Auto-generated metadata. Review category, purpose, and relationships.

@@ -1,0 +1,11 @@
+# Skills 本机配置模板
+# 复制此文件为 config.local.yaml 并填写本机实际路径
+
+paths:
+  obsidian_vault: "<PATH_TO_OBSIDIAN_VAULT>"
+  math_method_lib: "<PATH_TO_OBSIDIAN_VAULT>"  # 数学方法库路径，默认与 vault 相同
+
+tools:
+  qpdf: "qpdf"
+  tesseract: "tesseract"
+  python: "python"

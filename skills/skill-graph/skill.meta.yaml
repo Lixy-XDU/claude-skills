@@ -1,0 +1,35 @@
+name: skill-graph
+title: Skill Graph
+category: 元技能
+scope: personal
+status: active
+version: 0.2.1
+updated: 2026-05-14
+
+purpose: 为本地 Claude Code skills 创建和维护 skill.meta.yaml，并生成中文版 HTML 关系图。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - skill-index
+    - find-local-skills
+    - skill-distiller
+  upstream:
+    - find-local-skills
+    - skill-distiller
+    - skill-creator
+    - force-graph-physics
+  downstream:
+    - skill-index
+  should_run_before: []
+  should_run_after:
+    - find-local-skills
+    - skill-distiller
+    - skill-creator
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 负责关系可视化和 metadata 健康检查。
+  - 不负责最终路由和分类治理，相关决策交给 skill-index。
+  - 图可视化物理引擎遵循 force-graph-physics 的规则。修改 generate_skill_graph_html.py 时必须参考该 skill。

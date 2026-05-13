@@ -1,0 +1,30 @@
+name: skill-distiller
+title: Skill Distiller
+category: 元技能
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-12
+
+purpose: Convert practical work experience, project notes, debugging records, implementation lessons, plans, reviews, or repeated workflows into a focused Claude Code SKILL.md. Use when the user wants to create, refactor, or evaluate a skill from real work experience. This skill produces the skill content and a compact index handoff, but does not manage the full skill library.
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - skill-creator
+  upstream:
+    - find-local-skills
+    - find-skills
+  downstream:
+    - skill-index
+    - skill-graph
+  should_run_before:
+    - skill-index
+    - skill-graph
+  should_run_after:
+    - find-local-skills
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - Auto-generated metadata. Review category, purpose, and relationships.
