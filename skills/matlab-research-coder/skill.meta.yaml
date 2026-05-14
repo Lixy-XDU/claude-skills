@@ -1,0 +1,34 @@
+name: matlab-research-coder
+title: MATLAB Research Coder
+category: MATLAB, 数学与方法库
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-15
+
+purpose: 将本地 Markdown 方法笔记或文献笔记转化为 MATLAB 开发环境。触发条件：从数学推导、算法、数值方法、研究笔记或论文复现请求生成 MATLAB 实现。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - math-method-lib
+    - literature-to-math
+    - literature-paper-reading
+    - matlab-model-reconstructor
+  upstream:
+    - math-method-lib
+    - literature-paper-reading
+  downstream:
+    - matlab-model-reconstructor
+  should_run_before: []
+  should_run_after:
+    - literature-paper-reading
+    - math-method-lib
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 从 方法库/ 和 文献笔记/ 目录读取 .md 笔记
+  - 输出结构化的 MATLAB 项目（src/tests/examples/docs）
+  - 分 Workflow A（方法实现）和 Workflow B（论文复现）
+  - 路径约定委托给项目级 CLAUDE.md，不在本 skill 内硬编码
