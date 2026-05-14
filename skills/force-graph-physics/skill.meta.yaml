@@ -3,8 +3,8 @@ title: 图模型可视化物理引擎
 category: 工具
 scope: personal
 status: active
-version: 0.1.0
-updated: 2026-05-14
+version: 0.2.0
+updated: 2026-05-15
 
 purpose: 构建或优化交互式 2D 力导向节点-边图可视化的权威参考。所有需要图可视化的 skill 必须委托给本 skill。
 
