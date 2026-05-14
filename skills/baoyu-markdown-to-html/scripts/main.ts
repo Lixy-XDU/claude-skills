@@ -115,19 +115,34 @@ function postProcessMathWikiInHtml(html: string): string {
     (m) => m, // keep for store restoration
   );
 
-  // Inject MathJax v3 — try </head> first, fallback to <body>
-  const mathjaxScript = `
-<script>
-MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
-</script>
-<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>`;
+  // Inject MathJax v3 — insert before </head> or <body
+  // Build via array join to avoid $ interpretation issues in bun/npx pipeline
+  const mjLines = [
+    "",
+    "<script>",
+    "MathJax = { tex: { inlineMath: [["
+    + "'$'"
+    + ", "
+    + "'$'"
+    + "]], displayMath: [["
+    + "'$$'"
+    + ", "
+    + "'$$'"
+    + "]] } };",
+    "</script>",
+    "<script src=\"https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js\" async></script>",
+  ];
+  const mathjaxScript = mjLines.join("\n");
   if (!html.includes("MathJax")) {
     if (html.includes("</head>")) {
-      html = html.replace("</head>", `${mathjaxScript}\n</head>`);
+      const idx = html.indexOf("</head>");
+      html = html.slice(0, idx) + mathjaxScript + "\n" + html.slice(idx);
     } else if (html.includes("<body")) {
-      html = html.replace("<body", `${mathjaxScript}\n<body`);
+      const idx = html.indexOf("<body");
+      html = html.slice(0, idx) + mathjaxScript + "\n" + html.slice(idx);
     } else if (html.includes("</title>")) {
-      html = html.replace("</title>", `</title>${mathjaxScript}`);
+      const idx = html.indexOf("</title>") + "</title>".length;
+      html = html.slice(0, idx) + mathjaxScript + html.slice(idx);
     }
   }
 
