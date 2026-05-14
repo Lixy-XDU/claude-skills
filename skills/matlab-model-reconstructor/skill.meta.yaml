@@ -1,0 +1,24 @@
+name: matlab-model-reconstructor
+title: MATLAB Model Reconstructor
+category: 数学与方法库
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-14
+
+purpose: 从 MATLAB 代码（.m 文件、代码片段、项目目录）中逆向重建底层数学模型、变量定义、推导过程和最终公式。针对信号处理和优化工作流优化，覆盖 DSP 流水线、滤波器、FFT/频谱分析、估计、最小二乘、凸/非线性优化等场景。
+
+relations:
+  coordinates: []
+  cooperates_with: [math-method-lib, literature-to-math]
+  upstream: []
+  downstream: [math-method-lib]
+  should_run_before: []
+  should_run_after: []
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - Auto-generated metadata. Review category, purpose, and relationships.
+  - 可与 literature-to-math 互补：后者从论文提取数学方法，本 skill 从代码重建数学模型。
+  - 产出可对接 math-method-lib 入库。

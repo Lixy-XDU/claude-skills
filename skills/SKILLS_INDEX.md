@@ -13,6 +13,7 @@
 | 读论文做结构化笔记 | `/literature-paper-reading` | 按 10 维度框架读论文输出 Obsidian 笔记 |
 | 从论文提取数学方法 | `/literature-to-math` | PDF → 数学方法 → math-method-lib 入库 |
 | 管理数学方法库条目 | `/math-method-lib` | 按 16 节模板创建或审查方法条目 |
+| 从 MATLAB 代码重建数学模型 | `/matlab-model-reconstructor` | 代码 → 数学模型 → 变量 → 推导 → 公式 |
 | MATLAB 传统 GUI 开发 | `/matlab-traditional-gui` | figure + uicontrol 的 GUI 编码/重构/审查 |
 | Markdown 转 HTML | `/markdown-to-html` | 微信兼容主题的 MD→HTML 转换 |
 | 从 PDF 提取文本 | `/pdf-extract` | 三级策略提取 PDF 文本，供其他 skill 委托调用 |
@@ -39,6 +40,7 @@
 | `math-method-lib` | personal | 按 16 节模板创建或审查数学方法条目 | `/math-method-lib` |
 | `literature-to-math` | personal | 从学术文献 PDF 中提取数学方法入库 | `/literature-to-math` |
 | `literature-paper-reading` | personal | 按 10 维度框架系统阅读论文并产出结构化 Obsidian 笔记 | `/literature-paper-reading` |
+| `matlab-model-reconstructor` | personal | 从 MATLAB 代码逆向重建数学模型、推导与公式 | `/matlab-model-reconstructor` |
 
 ## 文档与写作
 

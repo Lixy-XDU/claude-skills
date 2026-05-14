@@ -1,5 +1,9 @@
 # Skills 更新日志
 
+## 2026-05-15
+- **新建**: `matlab-model-reconstructor` — 从 MATLAB 代码（.m 文件、代码片段、项目目录）逆向重建底层数学模型、变量定义、推导过程和最终公式，针对信号处理和优化工作流优化
+- **修改**: `SKILLS_INDEX.md` — 路由表和数学与方法库新增 `matlab-model-reconstructor` 条目
+
 ## 2026-05-14
 - **新建**: `skill-updater` — 一键检查并拉取 claude-skills 最新更新，自动备份旧 CLAUDE.md、重建 SKILL_GRAPH.html、不覆盖 config.local.yaml
 - **修复**: `baoyu-markdown-to-html` — MathJax 注入改用 array join 构建脚本字符串，根除 bun/npx 管道中 `$` 符号被截断导致公式无法渲染的问题（`0.1.1` 的三级回退方案未解决 $ 截断根因）

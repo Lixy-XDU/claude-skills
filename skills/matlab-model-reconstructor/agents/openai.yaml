@@ -1,0 +1,4 @@
+interface:
+  display_name: "MATLAB Model Reconstructor"
+  short_description: "Recover mathematical models and derivations from MATLAB code."
+  icon: "function"
