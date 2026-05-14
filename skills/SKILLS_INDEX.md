@@ -7,6 +7,7 @@
 | 找本地已有 skill | `/find-local-skills` | 查本地安装的 skill，避免重复 |
 | 找外部新 skill | `/find-skills` | 搜索社区/外部 skill |
 | 把经验沉淀成 skill | `/skill-distiller` | 从笔记、调试记录、项目经验中提炼 SKILL.md |
+| 更新 skills 到最新版本 | `/skill-updater` | 一键 git pull 最新 skills 和 CLAUDE.md |
 | skill 路由/分类/索引管理 | `/skill-index` | 为本文件维护提供路由和分类决策 |
 | skill 关系图/元数据健康 | `/skill-graph` | 生成 SKILL_GRAPH.html 和检查 metadata |
 | 读论文做结构化笔记 | `/literature-paper-reading` | 按 10 维度框架读论文输出 Obsidian 笔记 |
@@ -23,6 +24,7 @@
 
 | Skill | Scope | Purpose | Invocation |
 |---|---|---|---|
+| `skill-updater` | personal | 一键检查并拉取 claude-skills 最新更新 | `/skill-updater` |
 | `skill-index` | personal | 路由、分类、协调、审计本地 skill 系统 | `/skill-index` |
 | `skill-distiller` | personal | 从实践经验中蒸馏出可复用的 SKILL.md | `/skill-distiller` |
 | `skill-graph` | personal | 维护 skill.meta.yaml 并生成中文 HTML 关系图 | `/skill-graph` |
