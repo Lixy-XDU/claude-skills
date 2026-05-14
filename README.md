@@ -51,7 +51,7 @@ tools:
 
 | 类别 | Skill |
 |---|---|
-| 元技能 | `skill-index`, `skill-graph`, `skill-distiller`, `find-local-skills`, `find-skills` |
+| 元技能 | `skill-updater`, `skill-index`, `skill-graph`, `skill-distiller`, `find-local-skills`, `find-skills` |
 | 数学与方法库 | `math-method-lib`, `literature-to-math`, `literature-paper-reading` |
 | 工具 | `pdf-extract`, `force-graph-physics` |
 | 设计与界面 | `matlab-traditional-gui` |
@@ -90,7 +90,18 @@ type SKILLS_INDEX.md                                     # 查看索引
 
 ## 自动更新
 
-其他机器上的 Claude Code 会在会话启动时自动检查本仓库是否有新提交，询问用户是否更新。
+安装后，随时运行以下命令一键更新所有 skills：
+
+```
+/skill-updater
+```
+
+该 skill 会：
+- `git pull` 拉取最新 skills
+- 更新 `~/.claude/CLAUDE.md`（备份旧版）
+- 重建 `SKILL_GRAPH.html`
+
+无需手动管理 git。
 
 ## 贡献
 

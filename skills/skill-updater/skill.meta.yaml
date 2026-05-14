@@ -1,0 +1,26 @@
+name: skill-updater
+title: Skill Updater
+category: 元技能
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-14
+
+purpose: Check for and apply updates from claude-skills and claude-vaults GitHub repositories with a single command.
+
+relations:
+  coordinates:
+    - skill-index
+    - skill-graph
+  cooperates_with: []
+  upstream: []
+  downstream: []
+  should_run_before: []
+  should_run_after:
+    - skill-graph
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - Runs git fetch + git pull only, never modifies or creates skills
+  - Rebuilds SKILL_GRAPH.html after skill updates

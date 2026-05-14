@@ -1,8 +1,9 @@
 # Skills 更新日志
 
 ## 2026-05-14
+- **新建**: `skill-updater` — 一键检查并拉取 claude-skills 最新更新，自动备份旧 CLAUDE.md、重建 SKILL_GRAPH.html、不覆盖 config.local.yaml
 - **修复**: `baoyu-markdown-to-html` — MathJax 注入改用 array join 构建脚本字符串，根除 bun/npx 管道中 `$` 符号被截断导致公式无法渲染的问题（`0.1.1` 的三级回退方案未解决 $ 截断根因）
-- **修复**: `baoyu-markdown-to-html` — MathJax 注入三级回退：`</head>` 不存在时依次尝试 `<body`、`</title>`：`</head>` 不存在时依次尝试 `<body`、`</title>`，解决 baoyu-md 输出无 `</head>` 时静默跳过注入导致公式无法渲染的问题；注入检测改为区分大小写的 `MathJax`
+- **修复**: `baoyu-markdown-to-html` — MathJax 注入三级回退：`</head>` 不存在时依次尝试 `<body`、`</title>`，解决 baoyu-md 输出无 `</head>` 时静默跳过注入导致公式无法渲染的问题
 - **新建**: `force-graph-physics` — 图可视化物理引擎权威参考，包含渲染性能、物理模拟、碰撞检测、拖拽交互的规则和反模式。所有图模型可视化委托给本 skill
 - **新建**: `literature-paper-reading` — 按 10 维度框架系统阅读论文，产出结构化 Obsidian 笔记。前缀 `literature-`，与 `literature-to-math` 同家族
 - **新建**: `pdf-extract` — PDF 文本提取共享 skill，三级策略（PyMuPDF → qpdf 解密 → OCR），供其他 skill 委托调用。类别 `工具`
