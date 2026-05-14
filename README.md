@@ -6,32 +6,25 @@
 
 ```
 CLAUDE.md          # 全局约束（模板，使用时替换占位符）
-skills/            # 14 个 skill，6 个类别
+skills/            # 15 个 skill，6 个类别
   ├── SKILL_GRAPH.html      # 关系图谱
   ├── SKILLS_INDEX.md       # 技能索引
   └── CHANGELOG.md          # 更新日志
 ```
 
-## 快速装载
+## 一键装载
 
 ```powershell
-# 1. 克隆仓库
-git clone git@github.com:Lixy-XDU/claude-skills.git <local-path>
+git clone git@github.com:Lixy-XDU/claude-skills.git $env:USERPROFILE\.claude\skills; Copy-Item $env:USERPROFILE\.claude\skills\CLAUDE.md $env:USERPROFILE\.claude\CLAUDE.md -Force; Copy-Item $env:USERPROFILE\.claude\skills\config.local.example.yaml $env:USERPROFILE\.claude\skills\config.local.yaml
+```
 
-# 2. 部署 CLAUDE.md
-Copy-Item <local-path>\CLAUDE.md $env:USERPROFILE\.claude\CLAUDE.md
+安装依赖（如需 PDF 提取功能）：
 
-# 3. 部署 skills
-Copy-Item -Recurse <local-path>\skills $env:USERPROFILE\.claude\skills
-
-# 4. 配置本机环境
-cd $env:USERPROFILE\.claude\skills
-Copy-Item config.local.example.yaml config.local.yaml
-notepad config.local.yaml
-
-# 5. 安装依赖
+```powershell
 pip install pyyaml pymupdf pdf2image pillow pytesseract
 ```
+
+> 安装后编辑 `~/.claude/skills/config.local.yaml` 填入本地路径，然后运行 `/skill-updater` 验证。
 
 ## 配置 `config.local.yaml`
 
@@ -53,10 +46,10 @@ tools:
 |---|---|
 | 元技能 | `skill-updater`, `skill-index`, `skill-graph`, `skill-distiller`, `find-local-skills`, `find-skills` |
 | 数学与方法库 | `math-method-lib`, `literature-to-math`, `literature-paper-reading` |
-| 工具 | `pdf-extract`, `force-graph-physics` |
+| 工具 | `pdf-extract`, `force-graph-physics`, `desktop-computer-automation` |
 | 设计与界面 | `matlab-traditional-gui` |
-| 文档与写作 | `baoyu-markdown-to-html` |
-| 外部 | `skill-creator`, `desktop-computer-automation` |
+| 文档与写作 | `markdown-to-html` |
+| 外部 | `skill-creator` |
 
 ## Skill 委托规则
 
