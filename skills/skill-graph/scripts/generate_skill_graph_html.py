@@ -39,7 +39,8 @@ RELATION_LABELS_ZH = {
 
 CATEGORY_ORDER_ZH = [
     "元技能", "规划与评审", "编码与调试", "测试与质量", "文档与写作",
-    "运维与发布", "研究与发现", "设计与界面", "数据与分析", "数学与方法库",
+    "运维与发布", "研究与发现", "设计与界面", "数据与分析",
+    "MATLAB", "数学与方法库",
     "项目专用", "未分类",
 ]
 
@@ -54,6 +55,15 @@ def normalize_skill_name(name: str) -> str:
 
 def slug_to_title(name: str) -> str:
     return normalize_skill_name(name).replace("-", " ").replace("_", " ").title()
+
+
+def normalize_categories(raw) -> List[str]:
+    """将 category 字段规范化为字符串列表。支持逗号分隔的多分类。"""
+    if isinstance(raw, list):
+        return [c.strip() for c in raw if c.strip()]
+    if isinstance(raw, str):
+        return [c.strip() for c in raw.split(",") if c.strip()]
+    return ["未分类"]
 
 
 def parse_frontmatter(text: str) -> Dict[str, str]:
@@ -105,7 +115,8 @@ def infer_category(name: str, description: str) -> str:
         (["test", "qa", "coverage", "regression", "validation", "测试", "质量"], "测试与质量"),
         (["doc", "docs", "documentation", "changelog", "writing", "spec", "文档", "写作"], "文档与写作"),
         (["plan", "review", "risk", "migration", "audit", "architecture", "strategy", "规划", "评审", "风险"], "规划与评审"),
-        (["ui", "ux", "design", "frontend", "component", "visual", "gui", "matlab", "界面", "设计"], "设计与界面"),
+        (["matlab-", "matlab "], "MATLAB"),
+        (["ui", "ux", "design", "frontend", "component", "visual", "gui", "界面", "设计"], "设计与界面"),
         (["data", "analysis", "metric", "report", "analytics", "数据", "分析"], "数据与分析"),
         (["code", "debug", "bug", "refactor", "python", "implementation", "编码", "调试"], "编码与调试"),
         (["find", "search", "research", "discovery", "external", "community", "搜索", "发现"], "研究与发现"),
@@ -307,6 +318,7 @@ def load_all_metadata(root: Path) -> Tuple[List[Dict[str, Any]], List[str]]:
         meta["name"] = name
         meta.setdefault("title", skill.get("title") or slug_to_title(name))
         meta.setdefault("category", infer_category(name, skill.get("description", "")))
+        meta["categories"] = normalize_categories(meta.get("category", "未分类"))
         meta.setdefault("scope", infer_scope(root))
         meta.setdefault("status", "active")
         meta.setdefault("version", "0.1.0")
@@ -395,16 +407,15 @@ input,select{border:1px solid var(--border);background:#fff;color:var(--text);bo
 .item .meta{color:var(--muted);font-size:12px;margin-top:4px}
 .graph-wrap{height:calc(100vh - 210px);min-height:540px;position:relative;user-select:none;-webkit-user-select:none}
 svg{width:100%;height:100%;display:block;background:radial-gradient(circle at 20px 20px,rgba(37,99,235,.05) 2px,transparent 2px);background-size:36px 36px;user-select:none;-webkit-user-select:none}
-.edge{stroke:#94a3b8;stroke-width:1.5;marker-end:url(#arrow);fill:none}
+.edge{stroke:#94a3b8;stroke-width:0.8;stroke-opacity:0.35;marker-end:url(#arrow);fill:none}
 .legend{display:flex;gap:16px;justify-content:center;padding:8px 0 0 0;font-size:12px;color:var(--muted)}
 .legend-item{display:flex;align-items:center;gap:4px}
-.edge.highlight{stroke:var(--accent);stroke-width:3}
-.edge-label{font-size:11px;fill:#475569;paint-order:stroke;stroke:#fff;stroke-width:4px;stroke-linejoin:round}
+.edge.highlight{stroke:var(--accent);stroke-width:1.6;stroke-opacity:0.6}
 .node circle{fill:#fff;stroke:var(--accent);stroke-width:2;cursor:grab}
 .node.meta circle{fill:#eff6ff;stroke:#2563eb}
 .node.domain circle{fill:#f0fdf4;stroke:#16a34a}
 .node.warn circle{fill:#fffbeb;stroke:#d97706}
-.node.selected circle{stroke:#dc2626;stroke-width:4}
+.node.selected circle{stroke:#dc2626;stroke-width:4;stroke-dasharray:6 3}
 .node text{font-size:12px;font-weight:700;fill:var(--text);text-anchor:middle;dominant-baseline:middle;pointer-events:none}
 .detail{padding:14px 16px 18px;overflow:auto;max-height:calc(100vh - 230px);font-size:13px}
 .badge{display:inline-block;padding:3px 8px;border-radius:999px;background:var(--accent-soft);color:#1d4ed8;font-size:12px;margin:3px 4px 3px 0}
@@ -523,9 +534,9 @@ function getFilters() {
 function visibleNodes() {
   const f = getFilters();
   return DATA.nodes.filter((n) => {
-    const hay = [n.name, n.title, n.category, n.scope, n.status, n.purpose].join(" ").toLowerCase();
+    const hay = [n.name, n.title, ...nodeCats(n), n.scope, n.status, n.purpose].join(" ").toLowerCase();
     if (f.q && !hay.includes(f.q)) return false;
-    if (f.category && n.category !== f.category) return false;
+    if (f.category && !nodeCats(n).includes(f.category)) return false;
     if (f.scope && n.scope !== f.scope) return false;
     if (f.status && n.status !== f.status) return false;
     return true;
@@ -537,9 +548,87 @@ function escapeHtml(s) {
     .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
+
+function nodeCats(n) { return n.categories || [n.category || "未分类"]; }
+function shareCat(a, b) { const ca = nodeCats(a); return nodeCats(b).some(c => ca.includes(c)); }
 function truncate(s, n) {
   s = String(s ?? "");
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
+}
+
+function getMagnified() {
+  const set = new Set();
+  if (!selected) return set;
+  set.add(selected);
+  DATA.edges.forEach(e => {
+    if (e.source === selected) set.add(e.target);
+    if (e.target === selected) set.add(e.source);
+  });
+  return set;
+}
+
+const CAT_COLORS = {
+  "元技能": "#2563eb",
+  "数学与方法库": "#7c3aed",
+  "编码与调试": "#16a34a",
+  "测试与质量": "#ea580c",
+  "文档与写作": "#0891b2",
+  "运维与发布": "#dc2626",
+  "研究与发现": "#ca8a04",
+  "设计与界面": "#db2777",
+  "数据与分析": "#4f46e5",
+  "规划与评审": "#059669",
+  "MATLAB": "#e7702e",
+};
+function catColor(cat) { return CAT_COLORS[cat] || "#94a3b8"; }
+
+
+function drawEnvelopes(svg, nodes) {
+  const groups = new Map();
+  nodes.forEach(n => {
+    const p = posMap.get(n.name);
+    if (!p) return;
+    nodeCats(n).forEach(cat => {
+      if (!groups.has(cat)) groups.set(cat, []);
+      groups.get(cat).push({x: p.x, y: p.y, name: n.name});
+    });
+  });
+  svg.querySelectorAll('.envelope').forEach(el => el.remove());
+  groups.forEach((pts, cat) => {
+    if (pts.length < 2) return;
+    const color = catColor(cat);
+    const cx = pts.reduce((s, p) => s + p.x, 0) / pts.length;
+    const cy = pts.reduce((s, p) => s + p.y, 0) / pts.length;
+    const maxDist = Math.max(...pts.map(p => Math.sqrt((p.x - cx) ** 2 + (p.y - cy) ** 2)));
+    const r = maxDist + 32;
+    const d = `M${cx - r},${cy} A${r},${r} 0 1 0 ${cx + r},${cy} A${r},${r} 0 1 0 ${cx - r},${cy} Z`;
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("class", "envelope");
+    path.setAttribute("d", d);
+    path.setAttribute("fill", color);
+    path.setAttribute("fill-opacity", "0.05");
+    path.setAttribute("stroke", color);
+    path.setAttribute("stroke-dasharray", "5 5");
+    path.setAttribute("stroke-width", "1.2");
+    path.setAttribute("stroke-opacity", "0.5");
+    path.setAttribute("pointer-events", "none");
+    svg.insertBefore(path, svg.firstChild);
+    // 分类名称标签
+    const fontSize = Math.max(11, Math.min(Math.round(r / 5), 26));
+    const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+    text.setAttribute("class", "envelope");
+    text.setAttribute("x", cx);
+    text.setAttribute("y", cy);
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("dominant-baseline", "central");
+    text.setAttribute("fill", color);
+    text.setAttribute("fill-opacity", "0.35");
+    text.setAttribute("font-size", fontSize);
+    text.setAttribute("font-weight", "600");
+    text.setAttribute("pointer-events", "none");
+    text.textContent = cat;
+    svg.insertBefore(text, svg.firstChild);
+  });
 }
 
 function renderList(nodes) {
@@ -550,7 +639,7 @@ function renderList(nodes) {
     div.className = "item" + (selected === n.name ? " active" : "");
     div.innerHTML =
       '<div class="name">/' + escapeHtml(n.name) + '</div>' +
-      '<div class="meta">' + escapeHtml(n.category || "未分类") + ' · ' +
+      '<div class="meta">' + escapeHtml(nodeCats(n).join(", ")) + ' · ' +
       escapeHtml(n.scope || "unknown") + ' · ' + escapeHtml(n.status || "") + '</div>' +
       '<div class="meta">' + escapeHtml(truncate(n.purpose || "", 74)) + '</div>';
     div.onclick = () => { selected = n.name; panelDirty = true; };
@@ -585,7 +674,7 @@ function renderDetail() {
   $("detail").innerHTML =
     '<h3>/' + escapeHtml(node.name) + '</h3>' +
     '<div>' +
-      '<span class="badge">' + escapeHtml(node.category || "未分类") + '</span>' +
+      '<span class="badge">' + escapeHtml(nodeCats(node).join(", ")) + '</span>' +
       '<span class="badge gray">' + escapeHtml(node.scope || "unknown") + '</span>' +
       '<span class="badge green">' + escapeHtml(node.status || "unknown") + '</span>' +
       '<span class="badge gray">v' + escapeHtml(node.version || "") + '</span>' +
@@ -624,9 +713,25 @@ function layout(nodes, edges, w, h) {
   const cx = w / 2, cy = h / 2;
   const R = N <= 1 ? 0 : Math.min(cx, cy) - 90;
   const pos = new Map();
-  nodes.forEach((n, i) => {
-    const a = (Math.PI * 2 * i) / Math.max(N, 1) - Math.PI / 2;
-    pos.set(n.name, { x: cx + Math.cos(a) * R, y: cy + Math.sin(a) * R });
+  // 按主分类分组，同分类节点聚集在同一扇区
+  const groups = new Map();
+  nodes.forEach((n) => {
+    const cat = nodeCats(n)[0];
+    if (!groups.has(cat)) groups.set(cat, []);
+    groups.get(cat).push(n);
+  });
+  const groupList = [...groups.values()];
+  let angleStart = -Math.PI / 2;
+  const totalAngle = Math.PI * 2;
+  groupList.forEach((group) => {
+    const sectorSize = (group.length / N) * totalAngle;
+    group.forEach((n, j) => {
+      const a = group.length === 1
+        ? angleStart + sectorSize / 2
+        : angleStart + (sectorSize * (j + 0.5)) / group.length;
+      pos.set(n.name, { x: cx + Math.cos(a) * R, y: cy + Math.sin(a) * R });
+    });
+    angleStart += sectorSize;
   });
   if (N <= 2) return pos;
 
@@ -636,7 +741,7 @@ function layout(nodes, edges, w, h) {
     .map((e) => [idx.get(e.source), idx.get(e.target)])
     .filter(([a, b]) => a != null && b != null);
 
-  const REPULSE = 9000, SPRING = 0.02, IDEAL = 225, DAMP = 0.85;
+  const REPULSE = 3000, SPRING = 0.006, IDEAL = 100, DAMP = 0.85;
   const vel = arr.map(() => ({ x: 0, y: 0 }));
   for (let step = 0; step < 220; step++) {
     // 斥力
@@ -730,7 +835,7 @@ function resolveCollisions() {
   if (nodes.length < 2) return;
   const N = nodes.length;
   const arr = nodes.map((n) => ({...posMap.get(n.name)}));
-  const MIN_DIST = 110;        // 最小间距（2 × 半径 + 14px padding）
+  const MIN_DIST = 20;        // 最小间距（2 × 半径 + 14px padding）
   const svgW = 1200, svgH = 800;
 
   for (let step = 0; step < 80; step++) {
@@ -758,7 +863,7 @@ function resolveCollisions() {
       arr[i].y = Math.max(80, Math.min(svgH - 80, arr[i].y));
     }
     // 边弹簧：拉向理想距离
-    const IDEAL = 225, SPRING_K = 0.01;
+    const IDEAL = 100, SPRING_K = 0.005;
     const visEdges = DATA.edges.filter(e => nodes.some(n => n.name === e.source) && nodes.some(n => n.name === e.target));
     for (const e of visEdges) {
       const ai = nodes.findIndex(n => n.name === e.source);
@@ -786,16 +891,17 @@ function resolveDragCollisions() {
   if (nodes.length < 2) return;
   const dragPos = posMap.get(draggedNode);
   if (!dragPos) return;
-  const MIN_DIST = 110;
+  const MIN_DIST = 20;
   const svgW = 1200, svgH = 800;
 
-  const IDEAL = 225, SPRING = 0.015;
+  const IDEAL = 100, SPRING = 0.005;
   const visEdges = DATA.edges.filter(e => nodes.some(n => n.name === e.source) && nodes.some(n => n.name === e.target));
   // 推拉交错：每步同时做碰撞推开 + 弹簧拉回
   for (let step = 0; step < 10; step++) {
-    // a) 被拖节点推开周围节点
+    // a) 被拖节点推开周围节点（冻结节点抵抗）
     for (const n of nodes) {
       if (n.name === draggedNode) continue;
+      if ((selected ===n.name)) continue;
       const p = posMap.get(n.name);
       if (!p) continue;
       const dx = dragPos.x - p.x;
@@ -822,17 +928,19 @@ function resolveDragCollisions() {
       const f = (d - IDEAL) * SPRING;
       const srcIsDrag = e.source === draggedNode;
       const tgtIsDrag = e.target === draggedNode;
-      if (!srcIsDrag) { a.x += (dx / d) * f * 0.5; a.y += (dy / d) * f * 0.5; }
-      if (!tgtIsDrag) { b.x -= (dx / d) * f * 0.5; b.y -= (dy / d) * f * 0.5; }
+      if (!srcIsDrag && !(selected ===e.source)) { a.x += (dx / d) * f * 0.5; a.y += (dy / d) * f * 0.5; }
+      if (!tgtIsDrag && !(selected ===e.target)) { b.x -= (dx / d) * f * 0.5; b.y -= (dy / d) * f * 0.5; }
     }
     // c) 全量节点对互推（最后几步）
     if (step >= 7) {
       for (let i = 0; i < nodes.length; i++) {
         if (nodes[i].name === draggedNode) continue;
+        if ((selected ===nodes[i].name)) continue;
         const a = posMap.get(nodes[i].name);
         if (!a) continue;
         for (let j = i + 1; j < nodes.length; j++) {
           if (nodes[j].name === draggedNode) continue;
+          if ((selected ===nodes[j].name)) continue;
           const b = posMap.get(nodes[j].name);
           if (!b) continue;
           const dx2 = a.x - b.x, dy2 = a.y - b.y;
@@ -864,7 +972,7 @@ function resolveDragCollisions() {
       p.y = dragPos.y - (dy / d) * MIN_DIST;
     }
   }
-  // 同分类弱引力
+  // 同分类平方反比引力
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
       if (nodes[i].category !== nodes[j].category) continue;
@@ -872,12 +980,27 @@ function resolveDragCollisions() {
       const b = posMap.get(nodes[j].name);
       if (!a || !b) continue;
       const dx = b.x - a.x, dy = b.y - a.y;
-      const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
-      if (d > 350) {
-        const f = (d - 350) * 0.0015;
-        a.x += (dx / d) * f; a.y += (dy / d) * f;
-        b.x -= (dx / d) * f; b.y -= (dy / d) * f;
-      }
+      const d2 = dx * dx + dy * dy + 1;
+      const f = d2 * 0.00003;
+      const d = Math.sqrt(d2);
+      if (!(selected ===nodes[i].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
+      if (!(selected ===nodes[j].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
+    }
+  }
+  // 异分类平方反比斥力
+  const CROSS_REPULSE = 6000;
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      if (nodes[i].category === nodes[j].category) continue;
+      const a = posMap.get(nodes[i].name);
+      const b = posMap.get(nodes[j].name);
+      if (!a || !b) continue;
+      const dx = a.x - b.x, dy = a.y - b.y;
+      const d2 = dx * dx + dy * dy + 1;
+      const f = CROSS_REPULSE / d2;
+      const d = Math.sqrt(d2);
+      if (!(selected ===nodes[i].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
+      if (!(selected ===nodes[j].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
     }
   }
 }
@@ -907,6 +1030,7 @@ function physicsTick(now) {
     const RW = 0.04;
     for (const n of nodes) {
       if (isDragging && n.name === draggedNode) continue;
+      if ((selected ===n.name)) continue;
       let v = velMap.get(n.name);
       if (!v) { v = {vx: 0, vy: 0}; velMap.set(n.name, v); }
       v.vx += (Math.random() - 0.5) * RW;
@@ -916,6 +1040,7 @@ function physicsTick(now) {
     // 半隐式 Euler：先摩擦，再位移
     for (const n of nodes) {
       if (isDragging && n.name === draggedNode) continue;
+      if ((selected ===n.name)) continue;
       const v = velMap.get(n.name);
       const p = posMap.get(n.name);
       if (!p || !v) continue;
@@ -933,7 +1058,7 @@ function physicsTick(now) {
     }
 
     // 碰撞 + 弹簧 + 边-节点排斥（每物理步都跑）
-    const MIN_DIST = 110;
+    const MIN_DIST = 20;
     const arr = nodes.map(n => { const pp = posMap.get(n.name); return pp ? {x: pp.x, y: pp.y} : null; });
     for (let iter = 0; iter < 2; iter++) {
       for (let i = 0; i < nodes.length; i++) {
@@ -943,15 +1068,17 @@ function physicsTick(now) {
           if (!a || !b) continue;
           const dx = a.x - b.x, dy = a.y - b.y;
           const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
+          const frozenA = (selected ===nodes[i].name);
+          const frozenB = (selected ===nodes[j].name);
+          if (frozenA && frozenB) continue;
           if (d < MIN_DIST) {
             const overlap = MIN_DIST - d;
-            const fx = (dx / d) * overlap * 0.5;
-            const fy = (dy / d) * overlap * 0.5;
-            a.x += fx; a.y += fy; b.x -= fx; b.y -= fy;
-            const va = velMap.get(nodes[i].name) || {vx: 0, vy: 0};
-            const vb = velMap.get(nodes[j].name) || {vx: 0, vy: 0};
-            velMap.set(nodes[i].name, {vx: va.vx + fx * 0.2, vy: va.vy + fy * 0.2});
-            velMap.set(nodes[j].name, {vx: vb.vx - fx * 0.2, vy: vb.vy - fy * 0.2});
+            const fx = (dx / d) * overlap * (frozenA || frozenB ? 1 : 0.5);
+            const fy = (dy / d) * overlap * (frozenA || frozenB ? 1 : 0.5);
+            if (!frozenA) { a.x += fx; a.y += fy; }
+            if (!frozenB) { b.x -= fx; b.y -= fy; }
+            if (!frozenA) { const va = velMap.get(nodes[i].name) || {vx: 0, vy: 0}; velMap.set(nodes[i].name, {vx: va.vx + fx * 0.2, vy: va.vy + fy * 0.2}); }
+            if (!frozenB) { const vb = velMap.get(nodes[j].name) || {vx: 0, vy: 0}; velMap.set(nodes[j].name, {vx: vb.vx - fx * 0.2, vy: vb.vy - fy * 0.2}); }
           }
         }
       }
@@ -963,7 +1090,7 @@ function physicsTick(now) {
     }
 
     // 边弹簧
-    const IDEAL = 225, SPRING_K = 0.008;
+    const IDEAL = 100, SPRING_K = 0.005;
     const visEdges = DATA.edges.filter(e => nodes.some(n => n.name === e.source) && nodes.some(n => n.name === e.target));
     for (const e of visEdges) {
       const ai = nodes.findIndex(n => n.name === e.source);
@@ -974,23 +1101,38 @@ function physicsTick(now) {
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
       const f = (d - IDEAL) * SPRING_K;
-      a.x += (dx / d) * f; a.y += (dy / d) * f;
-      b.x -= (dx / d) * f; b.y -= (dy / d) * f;
+      if (!(selected ===nodes[ai].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
+      if (!(selected ===nodes[bi].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
     }
 
-    // 同分类弱引力
+    // 同分类平方反比引力
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
-        if (nodes[i].category !== nodes[j].category) continue;
+        if (!shareCat(nodes[i], nodes[j])) continue;
         const a = arr[i], b = arr[j];
         if (!a || !b) continue;
         const dx = b.x - a.x, dy = b.y - a.y;
-        const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
-        if (d > 350) {
-          const f = (d - 350) * 0.0015;
-          a.x += (dx / d) * f; a.y += (dy / d) * f;
-          b.x -= (dx / d) * f; b.y -= (dy / d) * f;
-        }
+        const d2 = dx * dx + dy * dy + 1;
+        const f = d2 * 0.00003;
+        const d = Math.sqrt(d2);
+        if (!(selected ===nodes[i].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
+        if (!(selected ===nodes[j].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
+      }
+    }
+
+    // 异分类平方反比斥力
+    const CROSS_REPULSE = 6000;
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        if (shareCat(nodes[i], nodes[j])) continue;
+        const a = arr[i], b = arr[j];
+        if (!a || !b) continue;
+        const dx = a.x - b.x, dy = a.y - b.y;
+        const d2 = dx * dx + dy * dy + 1;
+        const f = CROSS_REPULSE / d2;
+        const d = Math.sqrt(d2);
+        if (!(selected ===nodes[i].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
+        if (!(selected ===nodes[j].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
       }
     }
 
@@ -1007,7 +1149,7 @@ function physicsTick(now) {
   }
 }
 
-let svgCache = null;  // { edgeLines: Map, edgeLabels: Map, nodeGroups: Map, lastKey: "" }
+let svgCache = null;  // { edgeLines: Map, nodeGroups: Map, nodeCircles: Map, lastKey: "" }
 
 function renderGraph(nodes) {
   const svg = $("graph");
@@ -1037,13 +1179,13 @@ function renderGraph(nodes) {
   // 节点集变了 → 全量重建；否则只更新位置
   if (!svgCache || svgCache.lastKey !== key) {
     while (svg.firstChild) svg.removeChild(svg.firstChild);
-    svgCache = { edgeLines: new Map(), edgeLabels: new Map(), nodeGroups: new Map(), lastKey: key };
+    svgCache = { edgeLines: new Map(), nodeGroups: new Map(), nodeCircles: new Map(), lastKey: key };
 
     const defs = svgEl("defs");
     const marker = svgEl("marker");
     marker.setAttribute("id", "arrow");
-    marker.setAttribute("markerWidth", "10"); marker.setAttribute("markerHeight", "10");
-    marker.setAttribute("refX", "9"); marker.setAttribute("refY", "3");
+    marker.setAttribute("markerWidth", "6"); marker.setAttribute("markerHeight", "6");
+    marker.setAttribute("refX", "5"); marker.setAttribute("refY", "3");
     marker.setAttribute("orient", "auto"); marker.setAttribute("markerUnits", "strokeWidth");
     const ap = svgEl("path");
     ap.setAttribute("d", "M0,0 L0,6 L9,3 z"); ap.setAttribute("fill", "#94a3b8");
@@ -1055,10 +1197,6 @@ function renderGraph(nodes) {
       const line = svgEl("line"); line.setAttribute("class", "edge");
       svg.appendChild(line);
       svgCache.edgeLines.set(ek, line);
-      const lab = svgEl("text"); lab.setAttribute("class", "edge-label");
-      lab.textContent = e.label;
-      svg.appendChild(lab);
-      svgCache.edgeLabels.set(ek, lab);
     });
 
     nodes.forEach((n) => {
@@ -1072,7 +1210,7 @@ function renderGraph(nodes) {
         if (!isDragging) { selected = n.name; panelDirty = true; }
       });
       const c = svgEl("circle");
-      c.setAttribute("r", n.category === "元技能" ? "48" : "42");
+      c.setAttribute("r", nodeCats(n).includes("元技能") ? "6" : "5");
       g.appendChild(c);
       const t = svgEl("text");
       const label = n.title || ("/" + n.name);
@@ -1083,6 +1221,7 @@ function renderGraph(nodes) {
       g.appendChild(ti);
       svg.appendChild(g);
       svgCache.nodeGroups.set(n.name, g);
+      svgCache.nodeCircles.set(n.name, c);
     });
   }
 
@@ -1096,8 +1235,8 @@ function renderGraph(nodes) {
     const edist = Math.sqrt(edx * edx + edy * edy) || 1;
     const sNode = nodes.find(n => n.name === src);
     const tNode = nodes.find(n => n.name === tgt);
-    const sR = (sNode && sNode.category === "元技能" ? 48 : 42) + 3;
-    const tR = (tNode && tNode.category === "元技能" ? 48 : 42) + 5;
+    const sR = (sNode && nodeCats(sNode).includes("元技能") ? 6 : 5) + 1;
+    const tR = (tNode && nodeCats(tNode).includes("元技能") ? 6 : 5) + 2;
     line.setAttribute("x1", a.x + (edx / edist) * sR);
     line.setAttribute("y1", a.y + (edy / edist) * sR);
     line.setAttribute("x2", b.x - (edx / edist) * tR);
@@ -1106,27 +1245,39 @@ function renderGraph(nodes) {
     line.setAttribute("class", "edge" + (hl ? " highlight" : ""));
   });
 
-  // 更新边标签位置
-  svgCache.edgeLabels.forEach((lab, ek) => {
-    const [src, tgt] = ek.split("|||");
-    const a = posMap.get(src), b = posMap.get(tgt);
-    if (!a || !b) { lab.setAttribute("visibility", "hidden"); return; }
-    lab.setAttribute("visibility", "visible");
-    lab.setAttribute("x", (a.x + b.x) / 2);
-    lab.setAttribute("y", (a.y + b.y) / 2 - 4);
-  });
-
   // 更新节点位置
+  const magnified = getMagnified();
   svgCache.nodeGroups.forEach((g, name) => {
     const p = posMap.get(name);
     const n = nodes.find(nn => nn.name === name);
     if (!p || !n) { g.setAttribute("visibility", "hidden"); return; }
     g.setAttribute("visibility", "visible");
     g.setAttribute("transform", `translate(${p.x},${p.y})`);
-    const isMeta = n.category === "元技能";
+    const isMeta = nodeCats(n).includes("元技能");
     const isWarn = DATA.isolated.includes(name);
     g.setAttribute("class", "node " + (isMeta ? "meta " : "domain ") + (isWarn ? "warn " : "") + (selected === name ? "selected" : ""));
+    // 半径：选中 2×，关联 1.5×
+    const baseR = nodeCats(n).includes("元技能") ? 6 : 5;
+    const mag = magnified.has(name);
+    const isSel = selected === name;
+    const r = isSel ? baseR * 4 : (mag ? Math.round(baseR * 1.5) : baseR);
+    const c = svgCache.nodeCircles.get(name);
+    if (c) c.setAttribute("r", r);
+    // 文本：仅 magnified 节点显示
+    const t = g.querySelector('text');
+    if (t) {
+      if (mag) {
+        const label = n.title || ("/" + n.name);
+        t.textContent = label;
+        t.setAttribute("visibility", "visible");
+        if (isSel) t.setAttribute("font-size", "14");
+        else t.setAttribute("font-size", "12");
+      } else {
+        t.setAttribute("visibility", "hidden");
+      }
+    }
   });
+  drawEnvelopes(svg, nodes);
 }
 
 function render() {
@@ -1168,9 +1319,12 @@ def generate_html(root: Path, metas: List[Dict[str, Any]], warnings: List[str]) 
     all_warnings = warnings + edge_warnings
     isolated = detect_isolated(metas, edges)
 
-    categories = [c for c in CATEGORY_ORDER_ZH if any(m.get("category") == c for m in metas)]
+    cat_set = set()
     for m in metas:
-        c = m.get("category", "未分类")
+        for c in m.get("categories", [m.get("category", "未分类")]):
+            cat_set.add(c)
+    categories = [c for c in CATEGORY_ORDER_ZH if c in cat_set]
+    for c in sorted(cat_set):
         if c not in categories:
             categories.append(c)
 
