@@ -852,35 +852,6 @@ function resolveDragCollisions() {
       }
     }
   }
-  // 边-节点排斥：防止边穿过非端点节点
-  const EDGE_NODE_MIN = 65;
-  for (const e of visEdges) {
-    const ea = posMap.get(e.source), eb = posMap.get(e.target);
-    if (!ea || !eb) continue;
-    const abx = eb.x - ea.x, aby = eb.y - ea.y;
-    const ab2 = abx * abx + aby * aby + 0.001;
-    for (const n of nodes) {
-      if (n.name === e.source || n.name === e.target || n.name === draggedNode) continue;
-      const p = posMap.get(n.name);
-      if (!p) continue;
-      let t = ((p.x - ea.x) * abx + (p.y - ea.y) * aby) / ab2;
-      t = Math.max(0, Math.min(1, t));
-      const cx = ea.x + t * abx, cy = ea.y + t * aby;
-      const dd = Math.sqrt((p.x - cx) * (p.x - cx) + (p.y - cy) * (p.y - cy)) + 0.001;
-      if (dd < EDGE_NODE_MIN) {
-        const overlap = EDGE_NODE_MIN - dd;
-        const nx = (p.x - cx) / dd, ny = (p.y - cy) / dd;
-        p.x += nx * overlap;
-        p.y += ny * overlap;
-        // 速度反弹：节点朝边的法向弹出
-        const v = velMap.get(n.name);
-        if (v) {
-          const proj = v.vx * nx + v.vy * ny;
-          if (proj < 0) { v.vx -= 2 * proj * nx; v.vy -= 2 * proj * ny; }
-        }
-      }
-    }
-  }
   // 硬约束：最终确保拖拽节点不与任何节点重叠
   for (const n of nodes) {
     if (n.name === draggedNode) continue;
@@ -891,6 +862,22 @@ function resolveDragCollisions() {
     if (d < MIN_DIST) {
       p.x = dragPos.x - (dx / d) * MIN_DIST;
       p.y = dragPos.y - (dy / d) * MIN_DIST;
+    }
+  }
+  // 同分类弱引力
+  for (let i = 0; i < nodes.length; i++) {
+    for (let j = i + 1; j < nodes.length; j++) {
+      if (nodes[i].category !== nodes[j].category) continue;
+      const a = posMap.get(nodes[i].name);
+      const b = posMap.get(nodes[j].name);
+      if (!a || !b) continue;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
+      if (d > 350) {
+        const f = (d - 350) * 0.0015;
+        a.x += (dx / d) * f; a.y += (dy / d) * f;
+        b.x -= (dx / d) * f; b.y -= (dy / d) * f;
+      }
     }
   }
 }
@@ -991,29 +978,22 @@ function physicsTick(now) {
       b.x -= (dx / d) * f; b.y -= (dy / d) * f;
     }
 
-    // 边-节点排斥
-    const EDGE_NODE_MIN = 65;
-    for (const e of visEdges) {
-      const ea = arr[nodes.findIndex(n => n.name === e.source)];
-      const eb = arr[nodes.findIndex(n => n.name === e.target)];
-      if (!ea || !eb) continue;
-      const abx = eb.x - ea.x, aby = eb.y - ea.y, ab2 = abx * abx + aby * aby + 0.001;
-      for (let k = 0; k < nodes.length; k++) {
-        if (nodes[k].name === e.source || nodes[k].name === e.target) continue;
-        const p = arr[k]; if (!p) continue;
-        let t = ((p.x - ea.x) * abx + (p.y - ea.y) * aby) / ab2;
-        t = Math.max(0, Math.min(1, t));
-        const cx = ea.x + t * abx, cy = ea.y + t * aby;
-        const dd = Math.sqrt((p.x - cx) * (p.x - cx) + (p.y - cy) * (p.y - cy)) + 0.001;
-        if (dd < EDGE_NODE_MIN) {
-          const overlap = EDGE_NODE_MIN - dd;
-          const nx = (p.x - cx) / dd, ny = (p.y - cy) / dd;
-          p.x += nx * overlap; p.y += ny * overlap;
-          const v = velMap.get(nodes[k].name);
-          if (v) { const proj = v.vx * nx + v.vy * ny; if (proj < 0) { v.vx -= 2 * proj * nx; v.vy -= 2 * proj * ny; } }
+    // 同分类弱引力
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = i + 1; j < nodes.length; j++) {
+        if (nodes[i].category !== nodes[j].category) continue;
+        const a = arr[i], b = arr[j];
+        if (!a || !b) continue;
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
+        if (d > 350) {
+          const f = (d - 350) * 0.0015;
+          a.x += (dx / d) * f; a.y += (dy / d) * f;
+          b.x -= (dx / d) * f; b.y -= (dy / d) * f;
         }
       }
     }
+
     nodes.forEach((n, i) => { if (arr[i]) posMap.set(n.name, arr[i]); });
   }
 
