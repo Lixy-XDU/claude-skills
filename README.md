@@ -24,6 +24,12 @@ git clone git@github.com:Lixy-XDU/claude-skills.git $env:USERPROFILE\.claude\ski
 pip install pyyaml pymupdf pdf2image pillow pytesseract
 ```
 
+> 安装完成后，Claude Code 会自动询问是否一并装载 [claude-vaults](https://github.com/Lixy-XDU/claude-vaults)（数学方法库 vault 配置）。也可手动克隆：
+>
+> ```powershell
+> git clone git@github.com:Lixy-XDU/claude-vaults.git <your-obsidian-vault-path>
+> ```
+
 > 安装后编辑 `~/.claude/skills/config.local.yaml` 填入本地路径，然后运行 `/skill-updater` 验证。
 
 ## 配置 `config.local.yaml`
