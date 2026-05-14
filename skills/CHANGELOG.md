@@ -1,6 +1,7 @@
 # Skills 更新日志
 
 ## 2026-05-15
+- **修改**: `skill-graph` — 删除边-节点碰撞检测，新增同分类标签 skills 间弱引力（k=0.0015，仅在间距>350px 时生效）；版本 0.2.1 → 0.3.0
 - **新建**: `matlab-model-reconstructor` — 从 MATLAB 代码（.m 文件、代码片段、项目目录）逆向重建底层数学模型、变量定义、推导过程和最终公式，针对信号处理和优化工作流优化
 - **修改**: `SKILLS_INDEX.md` — 路由表和数学与方法库新增 `matlab-model-reconstructor` 条目
 

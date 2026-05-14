@@ -3,8 +3,8 @@ title: Skill Graph
 category: 元技能
 scope: personal
 status: active
-version: 0.2.1
-updated: 2026-05-14
+version: 0.3.0
+updated: 2026-05-15
 
 purpose: 为本地 Claude Code skills 创建和维护 skill.meta.yaml，并生成中文版 HTML 关系图。
 
