@@ -39,6 +39,7 @@ RELATION_LABELS_ZH = {
 
 CATEGORY_ORDER_ZH = [
     "元技能", "规划与评审", "编码与调试", "测试与质量", "文档与写作",
+    "学术写作与出版",
     "运维与发布", "研究与发现", "设计与界面", "数据与分析",
     "MATLAB", "数学与方法库",
     "项目专用", "未分类",
@@ -113,6 +114,8 @@ def infer_category(name: str, description: str) -> str:
         (["math", "数学", "method", "方法", "formula", "theorem", "proof"], "数学与方法库"),
         (["release", "deploy", "rollback", "monitor", "ops", "production", "运维", "发布"], "运维与发布"),
         (["test", "qa", "coverage", "regression", "validation", "测试", "质量"], "测试与质量"),
+        (["nature-", "manuscript", "publication", "学术写作", "学术出版", "期刊", "审稿",
+          "citation", "polish", "peer review"], "学术写作与出版"),
         (["doc", "docs", "documentation", "changelog", "writing", "spec", "文档", "写作"], "文档与写作"),
         (["plan", "review", "risk", "migration", "audit", "architecture", "strategy", "规划", "评审", "风险"], "规划与评审"),
         (["ml-", "matlab-", "matlab "], "MATLAB"),
@@ -580,6 +583,7 @@ const CAT_COLORS = {
   "编码与调试": "#16a34a",
   "测试与质量": "#ea580c",
   "文档与写作": "#0891b2",
+  "学术写作与出版": "#0d9488",
   "运维与发布": "#dc2626",
   "研究与发现": "#ca8a04",
   "设计与界面": "#db2777",

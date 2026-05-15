@@ -1,0 +1,27 @@
+name: skill-rm
+title: 技能删除
+category: 元技能
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-15
+
+purpose: 删除本地 skill，清理目录、索引条目和关系图节点。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - skill-index
+    - skill-graph
+  upstream:
+    - skill-index
+  downstream:
+    - skill-graph
+  should_run_before: []
+  should_run_after:
+    - skill-index
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - skill-index 的审计输出可能触发本 skill

@@ -14,7 +14,6 @@
 | 从论文提取数学方法 | `/literature-to-math` | PDF → 数学方法 → math-method-lib 入库 |
 | 管理数学方法库条目 | `/math-method-lib` | 按 16 节模板创建或审查方法条目 |
 | 从 MATLAB 代码重建数学模型 | `/ml-model-reconstructor` | 代码 → 数学模型 → 变量 → 推导 → 公式 |
-| MATLAB 传统 GUI 开发 | `/ml-traditional-gui` | figure + uicontrol 的 GUI 编码/重构/审查 |
 | Markdown 转 HTML | `/markdown-to-html` | 微信兼容主题的 MD→HTML 转换 |
 | 从 PDF 提取文本 | `/pdf-extract` | 三级策略提取 PDF 文本，供其他 skill 委托调用 |
 | 构建图可视化物理引擎 | `/force-graph-physics` | 力导向图渲染性能、物理模拟、碰撞检测的权威参考 |
@@ -34,11 +33,11 @@
 |---|---|---|---|
 | `skill-updater` | personal | 一键检查并拉取 claude-skills 最新更新 | `/skill-updater` |
 | `skill-index` | personal | 路由、分类、协调、审计本地 skill 系统 | `/skill-index` |
-| `skill-distiller` | personal | 从实践经验中蒸馏出可复用的 SKILL.md | `/skill-distiller` |
+| `skill-creator` | personal | 创建、改进、测试和从经验中蒸馏技能（distill/create/improve） | `/skill-creator` |
 | `skill-graph` | personal | 维护 skill.meta.yaml 并生成中文 HTML 关系图 | `/skill-graph` |
-| `skill-creator` | external | 创建、修改、评估和优化 skill | `/skill-creator` |
 | `find-local-skills` | personal | 查找、列出、审查本地已安装的 skill | `/find-local-skills` |
 | `find-skills` | personal | 搜索和发现外部/社区 skill | `/find-skills` |
+| `skill-lifecycle` | personal | 统一管理技能生命周期——删除、禁用、启用 | `/skill-lifecycle` |
 
 ## 数学与方法库
 
@@ -80,7 +79,7 @@
 
 | Skill | Scope | Purpose | Invocation |
 |---|---|---|---|
-| `ml-traditional-gui` | personal | MATLAB 传统 figure/uicontrol GUI 开发、重构与审查 | `/ml-traditional-gui` |
+
 | `nature-figure` | personal | 符合 Nature 排版标准的多面板科学图表（Python/R） | `/nature-figure` |
 
 ## 未分类
@@ -91,5 +90,4 @@
 
 ## Cleanup recommendations
 
-- `skill-creator` scope 为 external，如需本地定制可 fork 为 personal skill
 - `markdown-to-html` scope 为 external，若未来有本地修改需更新 scope
