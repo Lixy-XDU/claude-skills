@@ -1,6 +1,9 @@
 # Skills 更新日志
 
 ## 2026-05-15
+- **新建**: `nature-polishing`, `nature-figure`, `nature-writing`, `nature-citation`, `nature-data`, `nature-paper2ppt`, `nature-reader`, `nature-response`, `nature-academic-search` — 从 `Yuan1z0825/nature-skills` 引入，覆盖学术写作润色、论文图表、文稿起草、引用管理、数据声明、论文转 PPT、全文解读、审稿回复、文献检索全流程
+- **修改**: `SKILLS_INDEX.md` — 新增"学术写作与出版"分类，nature-figure 加入"设计与界面"，快速路由表扩充 8 条
+- **修改**: `skill-graph` — SKILL_GRAPH.html 重建，新增 9 个 nature-* 节点
 - **重构**: `matlab-` → `ml-` 前缀 — `matlab-research-coder` → `ml-research-coder`、`matlab-model-reconstructor` → `ml-model-reconstructor`、`matlab-traditional-gui` → `ml-traditional-gui`；全局引用同步更新，`infer_category` 兼容新旧前缀
 - **修改**: `skill-graph` — 全面重构物理与视觉：节点缩至 0.125×、选中放大 4× + 关联放大 1.5×、条件文本显示、同分类平方正比引力 + 异分类平方反比斥力、正圆包络 + 分类名标注、去边标签 + 边细化透明、新增 MATLAB 分类、category 支持逗号分隔多值；版本 0.3.0 → 0.4.0
 - **修改**: `force-graph-physics` — 规则从 16 条扩至 22 条，新增分类力学、选中冻结、视觉增强章节；工作流、反模式、故障排查同步更新
