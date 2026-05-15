@@ -1,0 +1,22 @@
+name: nature-academic-search
+title: Academic Search
+category: 研究与发现
+scope: unknown
+status: active
+version: 0.1.0
+updated: 2026-05-15
+
+purpose: >-
+
+relations:
+  coordinates: []
+  cooperates_with: []
+  upstream: []
+  downstream: []
+  should_run_before: []
+  should_run_after: []
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 自动生成的 metadata。建议手工检查 category、purpose 和 relations。

@@ -18,6 +18,13 @@
 | Markdown 转 HTML | `/markdown-to-html` | 微信兼容主题的 MD→HTML 转换 |
 | 从 PDF 提取文本 | `/pdf-extract` | 三级策略提取 PDF 文本，供其他 skill 委托调用 |
 | 构建图可视化物理引擎 | `/force-graph-physics` | 力导向图渲染性能、物理模拟、碰撞检测的权威参考 |
+| 学术英语润色/翻译 | `/nature-polishing` | 12 步流水线打磨至 Nature 风格，含中译英 |
+| 论文图表绘制 | `/nature-figure` | 生成符合 Nature 排版标准的多面板图表（Python/R） |
+| 论文写作/重构 | `/nature-writing` | 从声明、结果、笔记起草 Nature 风格论文章节 |
+| 文献检索 | `/nature-academic-search` | 多源文献搜索、引文验证、MeSH 策略 |
+| 论文转 PPT | `/nature-paper2ppt` | 从论文构建中文 PPT 演示文稿 |
+| 审稿回复 | `/nature-response` | 起草或审计 Nature 系列期刊逐点审稿回复信 |
+| 论文全文解读 | `/nature-reader` | 中英对照全文解读，图文表定位，带源锚点 |
 
 ---
 
@@ -48,12 +55,6 @@
 |---|---|---|---|
 | `markdown-to-html` | external | Markdown 转微信兼容主题 HTML | `/markdown-to-html` |
 
-## 设计与界面
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-| `ml-traditional-gui` | personal | MATLAB 传统 figure/uicontrol GUI 开发、重构与审查 | `/ml-traditional-gui` |
-
 ## 工具
 
 | Skill | Scope | Purpose | Invocation |
@@ -61,6 +62,26 @@
 | `pdf-extract` | personal | PDF 文本提取（三级策略：PyMuPDF → qpdf 解密 → OCR），供其他 skill 委托调用 | `/pdf-extract` |
 | `force-graph-physics` | personal | 图可视化物理引擎权威参考，skill-graph 遵循其规则 | `/force-graph-physics` |
 | `desktop-computer-automation` | personal | 基于 Midscene 的视觉驱动桌面自动化 | `/desktop-computer-automation` |
+
+## 学术写作与出版
+
+| Skill | Scope | Purpose | Invocation |
+|---|---|---|---|
+| `nature-polishing` | personal | 12 步润色流水线，学术英语打磨至 Nature 风格（含中译英） | `/nature-polishing` |
+| `nature-writing` | personal | 从声明/结果/笔记起草或重构 Nature 风格论文章节 | `/nature-writing` |
+| `nature-citation` | personal | 为文稿自动匹配 Nature/CNS 系列引用并导出参考文献 | `/nature-citation` |
+| `nature-data` | personal | 准备或审计 Nature 数据可用性声明和 FAIR 元数据 | `/nature-data` |
+| `nature-paper2ppt` | personal | 从论文构建 Nature 风格中文 PPT 演示文稿 | `/nature-paper2ppt` |
+| `nature-reader` | personal | 中英对照全文解读，图文表定位，源锚点保持 | `/nature-reader` |
+| `nature-response` | personal | 起草或审计 Nature 系列期刊逐点审稿回复信 | `/nature-response` |
+| `nature-academic-search` | personal | 多源文献搜索、引文验证、引文文件管理 | `/nature-academic-search` |
+
+## 设计与界面
+
+| Skill | Scope | Purpose | Invocation |
+|---|---|---|---|
+| `ml-traditional-gui` | personal | MATLAB 传统 figure/uicontrol GUI 开发、重构与审查 | `/ml-traditional-gui` |
+| `nature-figure` | personal | 符合 Nature 排版标准的多面板科学图表（Python/R） | `/nature-figure` |
 
 ## 未分类
 
