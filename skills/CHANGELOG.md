@@ -1,6 +1,7 @@
 # Skills 更新日志
 
 ## 2026-05-15
+- **重构**: `matlab-` → `ml-` 前缀 — `matlab-research-coder` → `ml-research-coder`、`matlab-model-reconstructor` → `ml-model-reconstructor`、`matlab-traditional-gui` → `ml-traditional-gui`；全局引用同步更新，`infer_category` 兼容新旧前缀
 - **修改**: `skill-graph` — 全面重构物理与视觉：节点缩至 0.125×、选中放大 4× + 关联放大 1.5×、条件文本显示、同分类平方正比引力 + 异分类平方反比斥力、正圆包络 + 分类名标注、去边标签 + 边细化透明、新增 MATLAB 分类、category 支持逗号分隔多值；版本 0.3.0 → 0.4.0
 - **修改**: `force-graph-physics` — 规则从 16 条扩至 22 条，新增分类力学、选中冻结、视觉增强章节；工作流、反模式、故障排查同步更新
 - **修改**: `matlab-traditional-gui` — 分类改为 `MATLAB, 设计与界面`（多分类）
