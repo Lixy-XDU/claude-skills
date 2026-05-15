@@ -14,6 +14,7 @@ Do not assume which directory to use before determining the user's intent. Do no
 
 ## Workflow Overview
 
+0. **确认路径**：开工前向用户确认输入源（`方法库` 或 `文献笔记` 的具体路径）和输出目标（`code-workspace/` 下的项目目录名）。路径未确认之前不得开始搜索笔记或生成代码。
 1. Determine whether the task is a general method implementation or a paper/literature reproduction.
 2. Select the correct note source.
 3. Search and read the relevant `.md` notes.
