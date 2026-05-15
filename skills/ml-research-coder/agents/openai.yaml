@@ -1,0 +1,3 @@
+interface:
+  display_name: "MATLAB Research Coder"
+  short_description: "Turn method notes and literature notes into MATLAB projects."

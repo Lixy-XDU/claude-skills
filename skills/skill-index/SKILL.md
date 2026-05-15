@@ -64,7 +64,7 @@ Experience distillation layer:
 Domain execution layer:
   /plan-review
   /risk-audit
-  /matlab-traditional-gui
+  /ml-traditional-gui
   /codebase-recon
   /release-checklist
   ...
@@ -90,7 +90,7 @@ Do not create nested category folders like this:
 
 ```bash
 ~/.claude/skills/meta/skill-distiller/SKILL.md
-~/.claude/skills/coding/matlab-traditional-gui/SKILL.md
+~/.claude/skills/coding/ml-traditional-gui/SKILL.md
 ```
 
 Claude Code expects each skill to live directly under `skills/<skill-name>/SKILL.md`.
@@ -174,7 +174,7 @@ Examples:
 ```text
 /codebase-recon
 /bug-pattern-extractor
-/matlab-traditional-gui
+/ml-traditional-gui
 ```
 
 ### Testing and QA
@@ -228,7 +228,7 @@ Skills for UI, UX, layout, visual structure, interaction design, and frontend be
 Examples:
 
 ```text
-/matlab-traditional-gui
+/ml-traditional-gui
 /ui-review
 /frontend-component-design
 ```

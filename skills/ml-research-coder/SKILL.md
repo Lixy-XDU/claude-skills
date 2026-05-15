@@ -1,5 +1,5 @@
 ---
-name: matlab-research-coder
+name: ml-research-coder
 description: use this skill when claude code needs to convert local markdown method notes or literature notes into a matlab development environment. trigger for matlab implementations from mathematical derivations, algorithms, numerical methods, research notes, or paper reproduction requests. use for planning project scaffolds, mapping equations to code, creating matlab modules, experiments, tests, examples, and traceability documents from local .md notes.
 ---
 

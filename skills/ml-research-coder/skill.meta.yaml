@@ -1,4 +1,4 @@
-name: matlab-research-coder
+name: ml-research-coder
 title: MATLAB Research Coder
 category: MATLAB, 数学与方法库
 scope: personal
@@ -14,12 +14,12 @@ relations:
     - math-method-lib
     - literature-to-math
     - literature-paper-reading
-    - matlab-model-reconstructor
+    - ml-model-reconstructor
   upstream:
     - math-method-lib
     - literature-paper-reading
   downstream:
-    - matlab-model-reconstructor
+    - ml-model-reconstructor
   should_run_before: []
   should_run_after:
     - literature-paper-reading

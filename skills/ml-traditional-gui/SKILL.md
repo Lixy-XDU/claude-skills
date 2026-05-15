@@ -1,5 +1,5 @@
 ---
-name: matlab-traditional-gui
+name: ml-traditional-gui
 description: Build, refactor, or review MATLAB traditional GUI code using figure, uicontrol, uipanel, normalized layout, SizeChangedFcn, UserData, and nested callbacks. Use for R2025b-compatible GUI work, especially when avoiding uifigure due to Windows text scaling issues.
 when_to_use: Use when the task involves MATLAB .m GUI files, traditional figure/uicontrol UI, responsive layout, font scaling, callback wiring, gobjects handle arrays, UserData state management, or debugging window drift, flicker, SizeChangedFcn, and resize problems.
 argument-hint: "[requirements-or-m-file]"

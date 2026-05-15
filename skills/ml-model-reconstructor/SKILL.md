@@ -1,5 +1,5 @@
 ---
-name: matlab-model-reconstructor
+name: ml-model-reconstructor
 description: reconstruct original mathematical models and derivations from matlab code for signal processing and optimization workflows. use when asked to analyze .m files, pasted matlab snippets, project folders, or runnable matlab/octave code to recover variables, equations, objectives, constraints, algorithms, assumptions, and full derivation steps; especially for dsp pipelines, filters, fft/spectral analysis, estimation, least squares, convex/nonlinear optimization, and code-to-formula documentation.
 ---
 

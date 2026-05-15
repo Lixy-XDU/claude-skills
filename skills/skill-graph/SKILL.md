@@ -220,7 +220,7 @@ The current local skill set may include:
 /find-local-skills
 /find-skills
 /math-method-lib
-/matlab-traditional-gui
+/ml-traditional-gui
 /skill-distiller
 /skill-graph
 /skill-index
@@ -240,7 +240,7 @@ Use this mental model:
 /skill-graph        → 生成可视化关系图和 metadata 健康检查
 ```
 
-Domain skills such as `/matlab-traditional-gui`, `/math-method-lib` should usually be graph leaves unless their metadata explicitly declares relationships.
+Domain skills such as `/ml-traditional-gui`, `/math-method-lib` should usually be graph leaves unless their metadata explicitly declares relationships.
 
 ## Safety rules
 

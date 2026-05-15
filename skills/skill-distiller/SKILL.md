@@ -240,7 +240,7 @@ codebase-recon
 skill-distiller
 find-local-skills
 skills-index
-matlab-traditional-gui
+ml-traditional-gui
 migration-risk-audit
 release-checklist
 test-strategy-review

@@ -115,7 +115,7 @@ def infer_category(name: str, description: str) -> str:
         (["test", "qa", "coverage", "regression", "validation", "测试", "质量"], "测试与质量"),
         (["doc", "docs", "documentation", "changelog", "writing", "spec", "文档", "写作"], "文档与写作"),
         (["plan", "review", "risk", "migration", "audit", "architecture", "strategy", "规划", "评审", "风险"], "规划与评审"),
-        (["matlab-", "matlab "], "MATLAB"),
+        (["ml-", "matlab-", "matlab "], "MATLAB"),
         (["ui", "ux", "design", "frontend", "component", "visual", "gui", "界面", "设计"], "设计与界面"),
         (["data", "analysis", "metric", "report", "analytics", "数据", "分析"], "数据与分析"),
         (["code", "debug", "bug", "refactor", "python", "implementation", "编码", "调试"], "编码与调试"),
@@ -406,6 +406,8 @@ input,select{border:1px solid var(--border);background:#fff;color:var(--text);bo
 .item .name{font-weight:700;font-size:14px}
 .item .meta{color:var(--muted);font-size:12px;margin-top:4px}
 .graph-wrap{height:calc(100vh - 210px);min-height:540px;position:relative;user-select:none;-webkit-user-select:none}
+.zoom-reset{position:absolute;bottom:12px;right:12px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:6px 14px;font-size:13px;color:var(--text);cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.08);display:none;z-index:10}
+.zoom-reset.visible{display:block}
 svg{width:100%;height:100%;display:block;background:radial-gradient(circle at 20px 20px,rgba(37,99,235,.05) 2px,transparent 2px);background-size:36px 36px;user-select:none;-webkit-user-select:none}
 .edge{stroke:#94a3b8;stroke-width:0.8;stroke-opacity:0.35;marker-end:url(#arrow);fill:none}
 .legend{display:flex;gap:16px;justify-content:center;padding:8px 0 0 0;font-size:12px;color:var(--muted)}
@@ -466,6 +468,7 @@ svg{width:100%;height:100%;display:block;background:radial-gradient(circle at 20
     <h2>关系网络</h2>
     <div class="graph-wrap">
       <svg id="graph" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Skill 关系图"></svg>
+      <button id="zoomReset" class="zoom-reset" onclick="resetZoom()">重置缩放</button>
     </div>
     <div class="legend">
       <span class="legend-item"><svg width="24" height="12"><line x1="2" y1="6" x2="18" y2="6" stroke="#94a3b8" stroke-width="1.5"/><circle cx="21" cy="6" r="3" fill="#94a3b8"/></svg> 上游指向下游</span>
@@ -498,6 +501,10 @@ let offsetX = 0, offsetY = 0;
 let dragSvg = null;                // 拖拽时的 SVG 引用
 let velMap = new Map();            // nodeName → {vx, vy} 所有节点的速度追踪
 let lastDragPos = null;            // 上一次拖拽位置 {x, y}，用于差分算速度
+let vbX = -20, vbY = -20, vbW = 1240, vbH = 840;  // viewBox 状态
+let isPanning = false;             // 平移画布状态
+let panStartX = 0, panStartY = 0;  // 平移起始屏幕坐标
+let panVbX = 0, panVbY = 0;        // 平移起始 viewBox
 let panelDirty = false;            // 侧边栏是否需要刷新
 
 const $ = (id) => document.getElementById(id);
@@ -550,7 +557,7 @@ function escapeHtml(s) {
 }
 
 function nodeCats(n) { return n.categories || [n.category || "未分类"]; }
-function shareCat(a, b) { const ca = nodeCats(a); return nodeCats(b).some(c => ca.includes(c)); }
+function jaccard(a, b) { const ca = nodeCats(a); const cb = nodeCats(b); const inter = ca.filter(c => cb.includes(c)).length; return inter / (ca.length + cb.length - inter); }
 function truncate(s, n) {
   s = String(s ?? "");
   return s.length > n ? s.slice(0, n - 1) + "…" : s;
@@ -756,11 +763,12 @@ function layout(nodes, edges, w, h) {
         vel[j].x -= fx; vel[j].y -= fy;
       }
     }
-    // 引力
+    // 引力（异类边弹力减弱）
     for (const [a, b] of links) {
       const dx = arr[b].x - arr[a].x, dy = arr[b].y - arr[a].y;
       const d = Math.sqrt(dx * dx + dy * dy) + 0.01;
-      const f = (d - IDEAL) * SPRING;
+      const k = jaccard(nodes[a], nodes[b]) ? SPRING : SPRING * 0.25;
+      const f = (d - IDEAL) * k;
       const fx = (dx / d) * f, fy = (dy / d) * f;
       vel[a].x += fx; vel[a].y += fy;
       vel[b].x -= fx; vel[b].y -= fy;
@@ -799,6 +807,15 @@ function startDrag(evt, nodeName, svg) {
 
 // 以下绑定在 SVG 元素上，全局响应 pointermove/pointerup
 function onSvgDrag(evt) {
+  if (isPanning) {
+    evt.preventDefault();
+    const dx = (evt.clientX - panStartX) * vbW / dragSvg.clientWidth;
+    const dy = (evt.clientY - panStartY) * vbH / dragSvg.clientHeight;
+    vbX = panVbX - dx;
+    vbY = panVbY - dy;
+    updateViewBox();
+    return;
+  }
   if (!isDragging || !draggedNode) return;
   evt.preventDefault();
   const svg = dragSvg;
@@ -816,6 +833,13 @@ function onSvgDrag(evt) {
 }
 
 function onSvgDragEnd(evt) {
+  if (isPanning) {
+    isPanning = false;
+    dragSvg.releasePointerCapture(evt.pointerId);
+    dragSvg.style.cursor = "grab";
+    dragSvg = null;
+    return;
+  }
   if (!isDragging) return;
   if (dragSvg && draggedNode) {
     dragSvg.releasePointerCapture(evt.pointerId);
@@ -862,7 +886,7 @@ function resolveCollisions() {
       arr[i].x = Math.max(80, Math.min(svgW - 80, arr[i].x));
       arr[i].y = Math.max(80, Math.min(svgH - 80, arr[i].y));
     }
-    // 边弹簧：拉向理想距离
+    // 边弹簧：拉向理想距离（异类边弹力减弱）
     const IDEAL = 100, SPRING_K = 0.005;
     const visEdges = DATA.edges.filter(e => nodes.some(n => n.name === e.source) && nodes.some(n => n.name === e.target));
     for (const e of visEdges) {
@@ -872,7 +896,8 @@ function resolveCollisions() {
       const a = arr[ai], b = arr[bi];
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
-      const f = (d - IDEAL) * SPRING_K;
+      const k = jaccard(nodes[ai], nodes[bi]) ? SPRING_K : SPRING_K * 0.25;
+      const f = (d - IDEAL) * k;
       a.x += (dx / d) * f;
       a.y += (dy / d) * f;
       b.x -= (dx / d) * f;
@@ -919,13 +944,16 @@ function resolveDragCollisions() {
         velMap.set(n.name, {vx: prev.vx - fx * 0.3, vy: prev.vy - fy * 0.3});
       }
     }
-    // b) 全量边弹簧（每步都拉，但跳过被拖节点——它跟随鼠标）
+    // b) 全量边弹簧（每步都拉，异类边减弱，跳过被拖节点）
     for (const e of visEdges) {
       const a = posMap.get(e.source), b = posMap.get(e.target);
       if (!a || !b) continue;
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
-      const f = (d - IDEAL) * SPRING;
+      const srcNode = nodes.find(n => n.name === e.source);
+      const tgtNode = nodes.find(n => n.name === e.target);
+      const k = (srcNode && tgtNode && jaccard(srcNode, tgtNode)) ? SPRING : SPRING * 0.25;
+      const f = (d - IDEAL) * k;
       const srcIsDrag = e.source === draggedNode;
       const tgtIsDrag = e.target === draggedNode;
       if (!srcIsDrag && !(selected ===e.source)) { a.x += (dx / d) * f * 0.5; a.y += (dy / d) * f * 0.5; }
@@ -972,33 +1000,17 @@ function resolveDragCollisions() {
       p.y = dragPos.y - (dy / d) * MIN_DIST;
     }
   }
-  // 同分类平方反比引力
+  // 统一 Jaccard 力（引力+斥力连续混合）
   for (let i = 0; i < nodes.length; i++) {
     for (let j = i + 1; j < nodes.length; j++) {
-      if (nodes[i].category !== nodes[j].category) continue;
       const a = posMap.get(nodes[i].name);
       const b = posMap.get(nodes[j].name);
       if (!a || !b) continue;
       const dx = b.x - a.x, dy = b.y - a.y;
       const d2 = dx * dx + dy * dy + 1;
-      const f = d2 * 0.00003;
       const d = Math.sqrt(d2);
-      if (!(selected ===nodes[i].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
-      if (!(selected ===nodes[j].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
-    }
-  }
-  // 异分类平方反比斥力
-  const CROSS_REPULSE = 6000;
-  for (let i = 0; i < nodes.length; i++) {
-    for (let j = i + 1; j < nodes.length; j++) {
-      if (nodes[i].category === nodes[j].category) continue;
-      const a = posMap.get(nodes[i].name);
-      const b = posMap.get(nodes[j].name);
-      if (!a || !b) continue;
-      const dx = a.x - b.x, dy = a.y - b.y;
-      const d2 = dx * dx + dy * dy + 1;
-      const f = CROSS_REPULSE / d2;
-      const d = Math.sqrt(d2);
+      const sim = jaccard(nodes[i], nodes[j]);
+      const f = sim * (d2 * 0.00003) - (1 - sim) * (6000 / d2);
       if (!(selected ===nodes[i].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
       if (!(selected ===nodes[j].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
     }
@@ -1089,7 +1101,7 @@ function physicsTick(now) {
       }
     }
 
-    // 边弹簧
+    // 边弹簧（异类边弹力减弱）
     const IDEAL = 100, SPRING_K = 0.005;
     const visEdges = DATA.edges.filter(e => nodes.some(n => n.name === e.source) && nodes.some(n => n.name === e.target));
     for (const e of visEdges) {
@@ -1100,37 +1112,22 @@ function physicsTick(now) {
       if (!a || !b) continue;
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
-      const f = (d - IDEAL) * SPRING_K;
+      const k = jaccard(nodes[ai], nodes[bi]) ? SPRING_K : SPRING_K * 0.25;
+      const f = (d - IDEAL) * k;
       if (!(selected ===nodes[ai].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
       if (!(selected ===nodes[bi].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
     }
 
-    // 同分类平方反比引力
+    // 统一 Jaccard 力（sim=1纯引力, sim=0纯斥力, 中间连续混合）
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
-        if (!shareCat(nodes[i], nodes[j])) continue;
         const a = arr[i], b = arr[j];
         if (!a || !b) continue;
         const dx = b.x - a.x, dy = b.y - a.y;
         const d2 = dx * dx + dy * dy + 1;
-        const f = d2 * 0.00003;
         const d = Math.sqrt(d2);
-        if (!(selected ===nodes[i].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
-        if (!(selected ===nodes[j].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
-      }
-    }
-
-    // 异分类平方反比斥力
-    const CROSS_REPULSE = 6000;
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        if (shareCat(nodes[i], nodes[j])) continue;
-        const a = arr[i], b = arr[j];
-        if (!a || !b) continue;
-        const dx = a.x - b.x, dy = a.y - b.y;
-        const d2 = dx * dx + dy * dy + 1;
-        const f = CROSS_REPULSE / d2;
-        const d = Math.sqrt(d2);
+        const sim = jaccard(nodes[i], nodes[j]);
+        const f = sim * (d2 * 0.00003) - (1 - sim) * (6000 / d2);
         if (!(selected ===nodes[i].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
         if (!(selected ===nodes[j].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
       }
@@ -1151,9 +1148,18 @@ function physicsTick(now) {
 
 let svgCache = null;  // { edgeLines: Map, nodeGroups: Map, nodeCircles: Map, lastKey: "" }
 
+function updateViewBox() {
+  const svg = $("graph");
+  svg.setAttribute("viewBox", `${vbX} ${vbY} ${vbW} ${vbH}`);
+  const btn = $("zoomReset");
+  const isDefault = Math.abs(vbW - 1240) < 10 && Math.abs(vbH - 840) < 10;
+  btn.classList.toggle("visible", !isDefault);
+}
+function resetZoom() { vbX = -20; vbY = -20; vbW = 1240; vbH = 840; updateViewBox(); }
+
 function renderGraph(nodes) {
   const svg = $("graph");
-  svg.setAttribute("viewBox", "-20 -20 1240 840");
+  svg.setAttribute("viewBox", `${vbX} ${vbY} ${vbW} ${vbH}`);
   svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
   if (!nodes.length) {
@@ -1297,9 +1303,43 @@ function render() {
 
 // SVG 层级拖拽事件（全局捕获，快速移动不丢节点）
 const svgElm = $("graph");
+svgElm.addEventListener("pointerdown", (evt) => {
+  // 点击 SVG 空白区域 → 平移画布（不干扰节点拖拽）
+  if (isDragging) return;
+  if (evt.target === svgElm || evt.target.tagName === "line" || evt.target.classList.contains("envelope")) {
+    isPanning = true;
+    dragSvg = svgElm;
+    panStartX = evt.clientX;
+    panStartY = evt.clientY;
+    panVbX = vbX;
+    panVbY = vbY;
+    svgElm.style.cursor = "grabbing";
+    svgElm.setPointerCapture(evt.pointerId);
+    evt.stopPropagation();
+  }
+});
 svgElm.addEventListener("pointermove", onSvgDrag);
 svgElm.addEventListener("pointerup", onSvgDragEnd);
 svgElm.addEventListener("pointercancel", onSvgDragEnd);
+svgElm.addEventListener("contextmenu", (evt) => {
+  evt.preventDefault();
+  selected = null;
+  panelDirty = true;
+});
+svgElm.addEventListener("wheel", (evt) => {
+  evt.preventDefault();
+  const pt = svgElm.createSVGPoint();
+  pt.x = evt.clientX; pt.y = evt.clientY;
+  const svgP = pt.matrixTransform(svgElm.getScreenCTM().inverse());
+  const mx = svgP.x, my = svgP.y;
+  const scale = evt.deltaY > 0 ? 1.15 : 0.87;
+  const nw = vbW * scale, nh = vbH * scale;
+  if (nw < 200 || nw > 4000) return;
+  const rx = (mx - vbX) / vbW, ry = (my - vbY) / vbH;
+  vbX = mx - rx * nw; vbY = my - ry * nh;
+  vbW = nw; vbH = nh;
+  updateViewBox();
+}, {passive: false});
 
 render();
 requestAnimationFrame(physicsTick);
