@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "source_pptx": "outputs/deck.pptx",
+    "generated_by": "pptx-layout-reverse/reverse_pptx_to_layout.py",
+    "unit": {"geometry": "inch", "font_size": "pt"},
+    "slide_size": {"width_in": 13.333, "height_in": 7.5}
+  },
+  "layouts": {
+    "layout_01_title_body_image_page_number": {
+      "slide_size": {"width_in": 13.333, "height_in": 7.5},
+      "source_slide_indexes": [0, 3, 5],
+      "slide_count": 3,
+      "slots": {
+        "title": {
+          "bbox": [0.7, 0.35, 12.0, 0.72],
+          "role": "title",
+          "kind": "text",
+          "samples": 3,
+          "style": {"font_name": "Arial", "font_size_pt": 28, "bold": true}
+        },
+        "body": {
+          "bbox": [0.85, 1.35, 5.9, 4.85],
+          "role": "body",
+          "kind": "text",
+          "samples": 3,
+          "style": {"font_name": "Arial", "font_size_pt": 16}
+        },
+        "image": {
+          "bbox": [7.1, 1.35, 5.3, 4.85],
+          "role": "image",
+          "kind": "image",
+          "samples": 3
+        },
+        "page_number": {
+          "bbox": [12.15, 7.0, 0.45, 0.22],
+          "role": "page_number",
+          "kind": "text",
+          "samples": 3
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+name: paper-note-to-ppt-template
+title: 论文/笔记转PPT——PNG模板套装版
+category: 演示与文档
+scope: personal
+status: active
+version: 0.3.0
+updated: 2026-05-19
+source: local
+
+purpose: 使用用户提供的 PNG 背景模板，按预设槽位叠加文字、公式（PNG）和图片，生成科研风格 PowerPoint。适用于组会汇报、journal club、课题汇报、开题/中期/答辩。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - pptx-layout-reverse
+  upstream: []
+  downstream:
+    - pptx-layout-reverse
+  should_run_before:
+    - pptx-layout-reverse
+  should_run_after: []
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 与 pptx-layout-reverse 构成闭环：生成 PPTX → 用户手动调整 → 逆向提取位置/字号 → 对比模板基准 → 更新模板参数
+  - 通过 MML2OMML.xsl XSLT 管道支持 LaTeX→OMML 转换，但 python-pptx 不支持 OMML 渲染，当前公式默认走 PNG
+  - 背景模板 80% 透明度叠加
+  - 页型：title/agenda/section/one_column/two_column/three_column/image_text/closing

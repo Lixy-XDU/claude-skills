@@ -1,0 +1,29 @@
+name: skill-lifecycle
+title: 技能生命周期管理
+category: 元技能
+scope: personal
+status: active
+version: 0.2.0
+updated: 2026-05-15
+
+purpose: 统一管理本地技能的删除、禁用、启用和中文化，共享定位→确认→执行→更新索引→重建图流程。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - skill-index
+    - skill-graph
+  upstream:
+    - skill-index
+  downstream:
+    - skill-graph
+  should_run_before: []
+  should_run_after:
+    - skill-index
+  supersedes:
+    - skill-rm
+    - skill-disable
+  overlaps_with: []
+
+notes:
+  - 合并了 skill-rm 和 skill-disable 的功能，统一为子命令模式

@@ -6,7 +6,7 @@ status: active
 version: 0.1.0
 updated: 2026-05-12
 
-purpose: Vision-driven desktop automation using Midscene. Control desktop (macOS, Windows, Linux) with natural language commands.
+purpose: 基于视觉的桌面自动化控制，通过 Midscene 使用自然语言指令操控桌面环境（macOS、Windows、Linux），完全依赖截图识别而非 DOM 或无障碍标签。
 
 relations:
   coordinates: []

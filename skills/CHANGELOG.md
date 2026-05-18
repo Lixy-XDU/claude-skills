@@ -1,6 +1,8 @@
 # Skills 更新日志
 
 ## 2026-05-15
+- **合并**: `skill-rm` + `skill-disable` → `skill-lifecycle` — 统一为子命令模式（`rm`/`disable`/`enable`），精简 2 个目录为 1 个，共享定位→确认→执行的流程框架
+- **合并**: `skill-distiller` → `skill-creator` — distill 作为 skill-creator 的 distill 模式（从笔记/调试记录/项目经验提炼技能），合并后统一为 distill/create/improve 三模式
 - **新建**: `nature-polishing`, `nature-figure`, `nature-writing`, `nature-citation`, `nature-data`, `nature-paper2ppt`, `nature-reader`, `nature-response`, `nature-academic-search` — 从 `Yuan1z0825/nature-skills` 引入，覆盖学术写作润色、论文图表、文稿起草、引用管理、数据声明、论文转 PPT、全文解读、审稿回复、文献检索全流程
 - **修改**: `SKILLS_INDEX.md` — 新增"学术写作与出版"分类，nature-figure 加入"设计与界面"，快速路由表扩充 8 条
 - **修改**: `skill-graph` — SKILL_GRAPH.html 重建，新增 9 个 nature-* 节点

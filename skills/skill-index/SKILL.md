@@ -1,794 +1,235 @@
 ---
 name: skill-index
-description: Coordinate, categorize, route, audit, and maintain local Claude Code skills. Use when the user wants to decide which skill to use, organize skills by function, update the skill index, coordinate find-local-skills, find-skills, and skill-distiller, or prevent local skill sprawl.
+description: 协调、分类、路由、审计和维护本地 Claude Code 技能系统。触发场景：用户想决定用哪个技能、按功能组织技能、更新技能索引、协调多个技能、防止技能冗余；或新增/修改技能后需要更新索引和分类。
 argument-hint: "[task-or-skill-topic]"
 disable-model-invocation: false
 ---
 
-# Skills Index
+# 技能索引
 
-Use this skill as the coordination layer for the user's Claude Code skills.
+本地技能系统的协调层。不替代领域技能，而是路由任务到正确技能、维护分类、协调元技能、防止技能库混乱。
 
-This skill does not replace domain-specific skills. It routes tasks to the right skill, maintains the skill taxonomy, coordinates meta skills, and prevents the local skill library from becoming disorganized.
-
-Core purpose:
+核心逻辑：
 
 ```text
-task → category → best skill → action → index update
+任务 → 分类 → 最佳技能 → 行动 → 索引更新
 ```
 
-## Use when
+## 适用场景
 
-Use this skill when the user asks to:
+- 决定哪个技能处理某项任务
+- 按功能组织技能
+- 构建或更新技能索引
+- 协调多个技能
+- 分类新技能
+- 判断技能应为个人级还是项目级
+- 检测技能重叠
+- 规划本地技能库结构
+- 清理技能冗余
+- 定义 `/find-local-skills`、`/find-skills`、`/skill-creator` 的协作方式
+- 创建路由映射
+- 生成或修订 `SKILLS_INDEX.md`
 
-- Decide which skill should handle a task.
-- Organize skills by function.
-- Build or update a skill index.
-- Coordinate multiple skills.
-- Categorize a new skill.
-- Decide whether a skill should be personal or project-level.
-- Detect overlap between skills.
-- Plan a local skill library structure.
-- Clean up skill sprawl.
-- Define how `/find-local-skills`, `/find-skills`, and `/skill-distiller` should work together.
-- Create a routing map for commonly used skills.
-- Generate or revise a `SKILLS_INDEX.md` auxiliary document.
-- Convert a loose skill list into a maintainable skill system.
+## 不适用场景
 
-## Do not use when
+- 用户已明确知道该用哪个领域技能
+- 只需执行具体的编码/调试/审查任务
+- 任务明显属于某专项技能
+- 想安装外部技能 → `/find-skills`
+- 想查看本地技能文件 → `/find-local-skills`
+- 想把经验变成技能 → `/skill-creator`
 
-Do not use this skill when:
+## 核心模型
 
-- The user already knows the exact domain skill to invoke.
-- The user only wants to execute a specific coding/debugging/review task.
-- The task belongs clearly to a specialized skill.
-- The user wants to install an external skill directly; use `/find-skills`.
-- The user wants to inspect local skill files directly; use `/find-local-skills`.
-- The user wants to convert raw experience into a new skill; use `/skill-distiller`.
-
-## Core model
-
-The user's skill system has three layers:
+技能系统分四层：
 
 ```text
-External discovery layer:
-  /find-skills
-
-Local management layer:
-  /find-local-skills
-  /skills-index
-
-Experience distillation layer:
-  /skill-distiller
-
-Domain execution layer:
-  /plan-review
-  /risk-audit
-  /ml-traditional-gui
-  /codebase-recon
-  /release-checklist
-  ...
+外部发现层：/find-skills
+本地管理层：/find-local-skills、/skill-index
+经验蒸馏层：/skill-creator
+领域执行层：各领域技能
 ```
 
-This skill owns the coordination logic between those layers.
+本技能拥有层间协调逻辑。
 
-## Recommended locations
+## 存放位置
 
-Personal skills should usually live here:
+个人技能：
 
 ```bash
 ~/.claude/skills/<skill-name>/SKILL.md
 ```
 
-Project-specific skills should usually live here:
+项目技能：
 
 ```bash
 <project>/.claude/skills/<skill-name>/SKILL.md
 ```
 
-Do not create nested category folders like this:
+**禁止**嵌套分类目录（如 `skills/meta/skill-distiller/SKILL.md`）。
 
-```bash
-~/.claude/skills/meta/skill-distiller/SKILL.md
-~/.claude/skills/coding/ml-traditional-gui/SKILL.md
-```
+分类通过本技能、命名约定或 `SKILLS_INDEX.md` 实现。
 
-Claude Code expects each skill to live directly under `skills/<skill-name>/SKILL.md`.
+## 同伴技能
 
-Use this skill, naming conventions, or an auxiliary `SKILLS_INDEX.md` file for categorization.
+| 技能 | 职责 |
+|------|------|
+| `/skill-index` | 路由、分类、治理 |
+| `/find-local-skills` | 本地清单、审计 |
+| `/find-skills` | 外部发现 |
+| `/skill-creator` | 创建/蒸馏/改进 |
+| `/skill-graph` | 关系可视化、元数据健康 |
 
-## Companion skills
+## 默认路由逻辑
 
-This skill coordinates these meta skills:
+1. 任务涉及技能管理 → `/skill-index` 或 `/find-local-skills`
+2. 查看已安装技能 → `/find-local-skills`
+3. 找新外部技能 → `/find-skills`
+4. 把经验变成技能 → `/skill-creator`
+5. 匹配已知领域技能 → 推荐该技能
+6. 无匹配 → 建议 `/skill-creator` 新建或 `/find-skills` 外部搜索
 
-| Skill | Role | Use when |
-|---|---|---|
-| `/skills-index` | Route, categorize, coordinate, and govern the local skill system | The user needs a skill map or coordination decision |
-| `/find-local-skills` | Search, list, inspect, compare, and audit installed local skills | The user needs to know what is already installed |
-| `/find-skills` | Search external/community skills | The user needs new capabilities not available locally |
-| `/skill-distiller` | Convert raw work experience into reusable `SKILL.md` files | The user has notes, lessons, or workflows to preserve |
+## 技能分类
 
-## Default routing logic
+| 分类 | 说明 | 示例 |
+|------|------|------|
+| 元技能 | 管理其他技能的技能 | skill-index, skill-graph, skill-creator |
+| 规划与审查 | 计划、架构、风险、决策质量 | plan-review, risk-audit |
+| 编码与调试 | 实现、重构、代码分析、bug 诊断 | codebase-recon |
+| 测试与QA | 验证、回归安全、测试计划、覆盖率 | test-strategy-review |
+| 文档与写作 | 文档、变更日志、规范、结构化写作 | docs-structure-review |
+| 运维与发布 | 发布就绪、部署、回滚、监控 | release-checklist |
+| 研究与发现 | 外部资源搜索、对比、信息收集 | find-skills |
+| 设计与UI | UI/UX、布局、交互设计 | ui-review |
+| 数据与分析 | 数据工作流、分析、报告 | data-analysis-review |
+| 项目特定 | 绑定单一仓库/团队的技能 | — |
 
-When the user describes a task, route it as follows:
+分类依据是技能的主要职责，非实现细节。
 
-1. If the task is about managing skills, use `/skills-index` or `/find-local-skills`.
-2. If the task is about finding installed skills, use `/find-local-skills`.
-3. If the task is about finding new external skills, use `/find-skills`.
-4. If the task is about turning experience into a skill, use `/skill-distiller`.
-5. If the task matches a known domain-specific skill, recommend that skill.
-6. If no matching skill exists, recommend either:
-   - create a new skill with `/skill-distiller`, or
-   - search externally with `/find-skills`.
+## 命名规则
 
-## Quick routing map
+- 小写、连字符、短、任务导向
+- 足够具体以可靠路由
 
-| User need | Recommended skill | Reason |
-|---|---|---|
-| “我该用哪个 skill？” | `/skills-index` | Decide the routing category and next skill |
-| “我本地有哪些 skill？” | `/find-local-skills` | Inspect installed local skills |
-| “帮我找一个外部 skill” | `/find-skills` | Search external/community skill sources |
-| “把这次经验沉淀成 skill” | `/skill-distiller` | Convert experience into reusable `SKILL.md` |
-| “本地 skill 太多，帮我整理” | `/find-local-skills` then `/skills-index` | First inspect, then reorganize |
-| “这个 skill 应该放哪类？” | `/skills-index` | Categorize and update index |
-| “这个 skill 有没有必要？” | `/skill-distiller` | Apply skill creation decision rule |
-| “这个 skill 和别的重复吗？” | `/find-local-skills` then `/skills-index` | Detect overlap, then decide merge/rename |
-| “给我一个技能库结构” | `/skills-index` | Design taxonomy and governance |
-| “生成 SKILLS_INDEX.md” | `/skills-index` | Produce auxiliary index document |
+**好名字**：`skill-index`、`find-local-skills`、`skill-creator`、`plan-review`、`release-checklist`
 
-## Skill categories
+**坏名字**：`my-skill`、`helper`、`general-tool`、`things-i-learned`
 
-Use these categories by default.
+如果视觉分组需要，用前缀而非嵌套目录（如 `coding-matlab-gui`），但调用体验优先时用短名，分组留在索引里。
 
-### Meta skills
+## 个人级 vs 项目级
 
-Skills that create, search, manage, audit, or coordinate other skills.
+**个人级**：跨项目通用、可复用工程判断、不绑定特定仓库
 
-Examples:
+**项目级**：依赖项目架构/命令/API/路径、编码团队约定、在外部项目中使用有害或混乱
 
-```text
-/skills-index
-/find-local-skills
-/find-skills
-/skill-distiller
-```
+不确定时：可复用判断放个人级，仓库事实放 `CLAUDE.md` 或项目级技能，临时笔记放文档。
 
-### Planning and review
-
-Skills for plans, architecture, migrations, risk, sequencing, and decision quality.
-
-Examples:
+## 技能生命周期
 
 ```text
-/plan-review
-/risk-audit
-/migration-risk-audit
+发现 → 蒸馏 → 创建 → 注册 → 审计 → 精炼
 ```
 
-### Coding and debugging
-
-Skills for implementation, refactoring, codebase analysis, and bug diagnosis.
-
-Examples:
-
-```text
-/codebase-recon
-/bug-pattern-extractor
-/ml-traditional-gui
-```
-
-### Testing and QA
-
-Skills for validation, regression safety, test planning, coverage, and QA review.
-
-Examples:
-
-```text
-/test-strategy-review
-```
-
-### Documentation and writing
-
-Skills for documentation, changelogs, specs, explanations, and structured writing.
-
-Examples:
-
-```text
-/docs-structure-review
-/changelog-writer
-```
-
-### Operations and release
-
-Skills for release readiness, deployment, rollback, monitoring, and production safety.
-
-Examples:
-
-```text
-/release-checklist
-/deployment-review
-/rollback-plan
-```
-
-### Research and discovery
-
-Skills for external research, comparison, public information gathering, and tool discovery.
-
-Examples:
-
-```text
-/find-skills
-/research-brief
-```
-
-### Design and UI
-
-Skills for UI, UX, layout, visual structure, interaction design, and frontend behavior.
-
-Examples:
-
-```text
-/ml-traditional-gui
-/ui-review
-/frontend-component-design
-```
-
-### Data and analysis
-
-Skills for data workflows, analysis, reporting, metrics, and interpretation.
-
-Examples:
-
-```text
-/data-analysis-review
-/metrics-audit
-```
-
-### Project-specific
-
-Skills tied to one repository, team, architecture, or deployment environment.
-
-These should usually live in:
-
-```bash
-<project>/.claude/skills/<skill-name>/SKILL.md
-```
-
-## Category selection rules
-
-When categorizing a skill:
-
-1. Choose the category based on the skill's primary job, not its implementation detail.
-2. If a skill manages skills, classify it as `Meta skills`.
-3. If a skill prevents bad decisions before implementation, classify it as `Planning and review`.
-4. If a skill directly guides code writing or debugging, classify it as `Coding and debugging`.
-5. If a skill verifies correctness, classify it as `Testing and QA`.
-6. If a skill produces written artifacts, classify it as `Documentation and writing`.
-7. If a skill affects production, deployment, rollback, or monitoring, classify it as `Operations and release`.
-8. If a skill searches external resources, classify it as `Research and discovery`.
-9. If a skill depends on one repo's commands or architecture, classify it as `Project-specific`.
-
-If a skill fits multiple categories, choose the one that best predicts when the user would invoke it.
-
-## Naming rules
-
-Skill names should be:
-
-- lowercase
-- hyphenated
-- short
-- task-oriented
-- specific enough to route reliably
-
-Good names:
-
-```text
-skills-index
-find-local-skills
-skill-distiller
-plan-review
-risk-audit
-codebase-recon
-matlab-traditional-gui
-migration-risk-audit
-release-checklist
-test-strategy-review
-```
-
-Bad names:
-
-```text
-my-skill
-helper
-general-tool
-things-i-learned
-project-notes
-work-summary
-useful-stuff
-```
-
-If visual grouping is needed, prefer prefixes over nested folders:
-
-```text
-meta-skills-index
-planning-plan-review
-coding-matlab-traditional-gui
-ops-release-checklist
-```
-
-However, when invocation ergonomics matter, prefer shorter names and maintain grouping in the index.
-
-## Personal vs project-level decision
-
-Recommend a personal/global skill when:
-
-- The workflow applies across multiple projects.
-- The skill captures general engineering judgment.
-- The skill is not tied to one repository's commands.
-- The skill is reusable in future unrelated work.
-
-Use:
-
-```bash
-~/.claude/skills/<skill-name>/SKILL.md
-```
-
-Recommend a project-level skill when:
-
-- The skill depends on project architecture.
-- The skill uses project-specific commands.
-- The skill encodes team conventions.
-- The skill references internal paths, APIs, deployment details, or local scripts.
-- The skill would be harmful or confusing outside the project.
-
-Use:
-
-```bash
-<project>/.claude/skills/<skill-name>/SKILL.md
-```
-
-If uncertain:
-
-- Put reusable judgment in a personal skill.
-- Put repository facts in `CLAUDE.md` or a project-level skill.
-- Put temporary notes in documentation, not in a skill.
-
-## Skill lifecycle
-
-### 1. Discover
-
-Before creating a new skill, check whether one already exists.
-
-Recommended command:
-
-```text
-/find-local-skills <topic>
-```
-
-If no local skill fits, optionally search external skills:
-
-```text
-/find-skills <topic>
-```
-
-### 2. Distill
-
-If the work experience contains reusable judgment, use:
-
-```text
-/skill-distiller <notes>
-```
-
-The goal is not to summarize everything. The goal is to extract repeatable rules, constraints, workflows, checks, and output expectations.
-
-### 3. Create
-
-Create a skill at:
-
-```bash
-~/.claude/skills/<skill-name>/SKILL.md
-```
-
-or:
-
-```bash
-<project>/.claude/skills/<skill-name>/SKILL.md
-```
-
-### 4. Register
-
-Add or update its entry in the index.
-
-Minimum entry format:
+1. **发现**：创建前查 `/find-local-skills`，无本地技能时可选 `/find-skills`
+2. **蒸馏**：从经验中提取可复用规则 → `/skill-creator distill`
+3. **创建**：放到 `~/.claude/skills/<name>/SKILL.md` 或 `<project>/.claude/skills/<name>/SKILL.md`
+4. **注册**：在 `SKILLS_INDEX.md` 中添加 `| \`skill-name\` | personal/project | 一句话用途 | \`/skill-name\` |`
+5. **审计**：`/find-local-skills audit` 检查重复/模糊描述/过度触发/危险权限
+6. **精炼**：根据实际使用补充边界情况、失效模式、验证检查
+
+## 索引条目格式
 
 ```markdown
-| `skill-name` | personal/project/external | One-sentence purpose | `/skill-name` |
+| `skill-name` | personal/project/external | 一句话用途 | `/skill-name` |
 ```
 
-### 5. Audit
+Scope 值：`personal`、`project`、`external`、`bundled`、`unknown`。
 
-After adding or changing skills, run:
+## 输出格式
 
-```text
-/find-local-skills audit
-```
-
-Look for:
-
-- duplicate skills
-- vague descriptions
-- overly broad triggers
-- missing output expectations
-- project-specific content in global skills
-- dangerous tool permissions
-- missing manual invocation guard for high-impact workflows
-
-### 6. Refine
-
-Update skills after real use if they miss:
-
-- edge cases
-- failure modes
-- validation checks
-- output constraints
-- trigger exclusions
-- safety rules
-- index category
-
-## Standard index entry
-
-Use this table format for skill index entries:
+### 决定用哪个技能时
 
 ```markdown
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-| `skill-name` | personal | One-sentence purpose | `/skill-name` |
-```
-
-Scope values:
-
-```text
-personal
-project
-external
-bundled
-unknown
-```
-
-## Standard SKILLS_INDEX.md structure
-
-When generating an auxiliary `SKILLS_INDEX.md`, use this structure:
-
-```markdown
-# Claude Skills Index
-
-## Quick routing map
-
-| Need | Use | Purpose |
-|---|---|---|
-
-## Meta skills
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Planning and review
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Coding and debugging
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Testing and QA
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Documentation and writing
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Operations and release
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Research and discovery
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Design and UI
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Data and analysis
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Project-specific
-
-| Skill | Scope | Purpose | Invocation |
-|---|---|---|---|
-
-## Cleanup recommendations
-
-- Recommendation 1
-- Recommendation 2
-```
-
-## Required output formats
-
-### When the user asks which skill to use
-
-Return:
-
-```markdown
-## Recommended skill
-
+## 推荐技能
 `/<skill-name>`
-
-Reason:
-- Why this skill fits
-- What input to pass
-- Any caveats
-
-## Alternatives
-
-| Skill | When to prefer it |
-|---|---|
-| `/other-skill` | Reason |
+理由：...
+## 替代方案
+| Skill | 何时选用 |
 ```
 
-### When the user asks to categorize a skill
-
-Return:
+### 分类决策时
 
 ```markdown
-## Category decision
-
-Category: <category>
-
-Reason:
-- Reason 1
-- Reason 2
-
-Index entry:
-
-| `skill-name` | personal/project/external | One-sentence purpose | `/skill-name` |
+## 分类决策
+分类：<category>
+理由：...
+索引条目：
+| `skill-name` | personal/project | 一句话用途 | `/skill-name` |
 ```
 
-### When the user asks to update the index
-
-Return either:
-
-1. the full revised `SKILLS_INDEX.md`, or
-2. a patch section that can be pasted into the existing index.
-
-Use this format:
+### 审计时
 
 ```markdown
-## Index update
-
-Action: Add / Update / Move / Remove / Merge
-
-Category: <category>
-
-Entry:
-
-| `skill-name` | personal/project/external | One-sentence purpose | `/skill-name` |
+## 技能系统审计
+| 问题 | 严重度 | 受影响技能 | 建议操作 |
 ```
 
-### When the user asks to audit the skill system
+严重度：`high`（危险权限、重复高影响技能、全局技能含项目特定内容）> `medium`（模糊描述、缺少输出期望、重叠）> `low`（命名清理、格式）。
 
-Return:
+### 索引更新时
+
+返回完整 `SKILLS_INDEX.md` 或可粘贴的补丁区：
 
 ```markdown
-## Skill system audit
-
-| Issue | Severity | Affected skills | Recommended action |
-|---|---|---|---|
+## 索引更新
+操作：新增/更新/移动/删除/合并
+分类：<category>
+条目：
+| `skill-name` | personal/project | 一句话用途 | `/skill-name` |
 ```
 
-Severity levels:
+## 冲突解决
+
+两个技能重叠时：
+1. 同名 → 保留窄的、安全的、项目级的
+2. 合并重复检查清单
+3. 重命名模糊技能
+4. 归档或删除废弃技能
+5. 处理后更新索引
+
+## 安全规则
+
+- 不推荐盲目安装外部技能
+- 不推荐宽泛 `allowed-tools`（除非用户明确要求）
+- 标记含 shell/write/delete/install/deploy/credential/network 权限的技能
+- 高影响工作流推荐 `disable-model-invocation: true`
+- 不将项目特定操作命令放入全局技能
+- 不把一次性笔记变成技能
+- 不在 `skills/` 下创建嵌套分类目录
+
+## 与同伴技能的协作
+
+- **skill-creator** 产出新技能 → 本技能决定名称、分类、scope、路径、索引条目
+- **find-local-skills** 做实际本地检查 → 本技能设计分类和路由策略
+- **find-skills** 安装外部技能 → 本技能检查、分类、加入索引、标记安全问题
+- **skill-graph** 可视化 → 本技能提供分类和路由依据
+
+## 运行节奏
+
+```
+新增技能后：/find-local-skills audit → /skill-index 更新索引
+完成大量工作后：/skill-creator distill → /skill-index 分类
+进入新项目时：/find-local-skills → /skill-index 项目技能映射
+需要新能力时：/find-skills → /skill-index 分类已安装外部技能
+```
+
+## 最终规则
+
+技能系统行为：
 
 ```text
-high
-medium
-low
+发现 → 路由 → 执行 → 蒸馏 → 索引 → 审计 → 精炼
 ```
 
-Use `high` for:
-
-- dangerous permissions
-- duplicate high-impact skills
-- unclear deployment/release/migration skills
-- project-specific commands in global skills
-- broad auto-triggering skill descriptions
-
-Use `medium` for:
-
-- vague descriptions
-- missing output expectations
-- missing validation checklists
-- overlapping non-dangerous skills
-
-Use `low` for:
-
-- naming cleanup
-- categorization clarity
-- formatting issues
-
-## Conflict resolution rules
-
-When two skills overlap:
-
-1. Keep the narrower skill if it has a clearer trigger.
-2. Keep the safer skill if one has unnecessary tool permissions.
-3. Keep the project-level skill for project-specific workflows.
-4. Keep the personal-level skill for reusable judgment.
-5. Merge duplicated checklists.
-6. Rename vague skills.
-7. Archive or delete obsolete skills.
-8. Update the index after the decision.
-
-Conflict output:
-
-```markdown
-## Conflict decision
-
-| Skills | Conflict | Decision |
-|---|---|---|
-| `/skill-a`, `/skill-b` | Both handle the same task | Keep `/skill-a`; merge useful rules from `/skill-b` |
-```
-
-## Safety rules
-
-When coordinating skills:
-
-- Do not recommend blind installation of external skills.
-- Do not recommend broad `allowed-tools` unless the user explicitly asks.
-- Flag skills that include shell, write, delete, install, deploy, credential, or network permissions.
-- Prefer `disable-model-invocation: true` for high-impact workflows.
-- Prefer explicit invocation for release, migration, deployment, shell, destructive, or permission-sensitive skills.
-- Do not move project-specific operational commands into global skills.
-- Do not turn one-off notes into skills.
-- Do not create nested category folders under `skills/`.
-
-## High-impact skill policy
-
-High-impact skills include:
-
-- deployment
-- release
-- migration
-- shell automation
-- file deletion
-- git history rewrite
-- credential handling
-- infrastructure modification
-- database changes
-- production debugging
-
-For these, recommend:
-
-```yaml
-disable-model-invocation: true
-```
-
-and avoid `allowed-tools` unless the user explicitly wants pre-authorization.
-
-## Integration with skill-distiller
-
-When `/skill-distiller` produces a new skill, this skill should help decide:
-
-- skill name
-- category
-- scope
-- path
-- index entry
-- overlap with existing skills
-- whether it should be merged instead of created
-
-A new skill from `/skill-distiller` should usually produce:
-
-```markdown
-Recommended category: <category>
-Recommended path: ~/.claude/skills/<skill-name>/SKILL.md
-
-Index entry:
-
-| `skill-name` | personal | One-sentence purpose | `/skill-name` |
-```
-
-## Integration with find-local-skills
-
-Use `/find-local-skills` when the task requires actual local inspection.
-
-This skill can design the taxonomy and routing policy, but `/find-local-skills` should inspect:
-
-```bash
-~/.claude/skills/*/SKILL.md
-.claude/skills/*/SKILL.md
-```
-
-Use `/find-local-skills` before finalizing:
-
-- merges
-- deletions
-- duplicate reports
-- inventory tables
-- index updates based on actual installed files
-
-## Integration with find-skills
-
-Use `/find-skills` when the local library lacks a required capability.
-
-After installing an external skill:
-
-1. inspect it
-2. classify it
-3. add it to the index
-4. flag any safety concerns
-5. decide whether a local wrapper/customized skill is needed
-
-## Operating rhythm
-
-After adding a skill:
-
-```text
-/find-local-skills audit
-/skills-index update index
-```
-
-After finishing substantial work:
-
-```text
-/skill-distiller <notes>
-/skills-index categorize new skill
-```
-
-When entering a new project:
-
-```text
-/find-local-skills current project
-/skills-index project skill map
-```
-
-When needing unfamiliar capability:
-
-```text
-/find-skills <task-or-tool>
-/skills-index categorize installed external skill
-```
-
-## Output expectations
-
-When this skill is used:
-
-- Route the user to the best skill.
-- Explain why that skill fits.
-- Recommend whether to use local, external, or newly distilled skills.
-- Categorize skills consistently.
-- Produce index entries in a paste-ready format.
-- Keep the skill library flat under `skills/<skill-name>/SKILL.md`.
-- Avoid creating generic or duplicate skills.
-- Keep meta skills distinct from domain execution skills.
-- Preserve safety boundaries for high-impact workflows.
-- Use the user's language unless the user asks otherwise.
-
-## Final rule
-
-A skill system should behave like this:
-
-```text
-discover → route → execute → distill → index → audit → refine
-```
-
-If a file does not help routing, judgment, workflow, validation, or reuse, it should not become a skill.
+如果一个文件不能帮助路由、判断、工作流、验证或复用，就不该成为技能。

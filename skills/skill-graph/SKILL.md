@@ -1,106 +1,64 @@
 ---
 name: skill-graph
-description: Generate Chinese HTML relationship maps for local Claude Code skills, create or maintain skill.meta.yaml files, and visualize how skills cooperate. Use when the user wants a visual skill graph, metadata health check, relationship map, or Chinese HTML overview of local skills.
+description: 生成中文 HTML 技能关系图，创建或维护 skill.meta.yaml 文件，可视化技能之间的协作关系。触发场景：用户要技能关系图、元数据健康检查、关系映射、中文 HTML 技能概览。
 argument-hint: "[skills-root-or-graph-task]"
 disable-model-invocation: true
 ---
 
-# Skill Graph
+# 技能关系图
 
-Use this skill to maintain a Chinese HTML relationship graph for local Claude Code skills.
-
-This skill has two responsibilities:
+维护本地技能的中文 HTML 关系图，两大职责：
 
 ```text
-1. Ensure each local skill has skill.meta.yaml metadata.
-2. Generate a Chinese single-file HTML graph from that metadata.
+1. 确保每个本地技能有 skill.meta.yaml
+2. 从元数据生成中文单文件 HTML 图
 ```
 
-This skill is not the routing layer. Routing and taxonomy decisions belong to `/skill-index`.
+此技能不负责路由。路由和分类属于 `/skill-index`。
 
-The graph visualization physics and rendering follow rules defined in `/force-graph-physics`. All modifications to `generate_skill_graph_html.py` must consult that skill for optimization patterns, anti-patterns, and troubleshooting.
+图可视化物理和渲染遵循 `/force-graph-physics` 的规则。
 
-## Use when
+## 适用场景
 
-Use this skill when the user asks to:
+- 生成技能可视化图
+- 创建或更新 `skill.meta.yaml`
+- 生成中文 HTML 关系图
+- 查看技能间协作关系
+- 检测孤立技能
+- 检测断裂关系
+- 元数据健康检查
 
-- Generate a visual graph of local skills.
-- Create or update `skill.meta.yaml` for every skill.
-- Generate a Chinese HTML skill relationship map.
-- See how `/find-local-skills`, `/find-skills`, `/skill-distiller`, `/skill-index`, `/skill-graph`, and domain skills cooperate.
-- Detect isolated skills.
-- Detect broken relationships.
-- Inspect metadata health.
-- Track how the skill system evolves over time.
+## 不适用场景
 
-## Do not use when
+- 决定用哪个技能 → `/skill-index`
+- 查看技能列表 → `/find-local-skills`
+- 创建或重构技能 → `/skill-creator`
+- 找外部技能 → `/find-skills`
 
-Do not use this skill when:
-
-- The user wants to decide which skill should handle a task. Use `/skill-index`.
-- The user wants to inspect actual installed skills without graphing. Use `/find-local-skills`.
-- The user wants to create or refactor a single skill from experience. Use `/skill-distiller`.
-- The user wants to find external skills. Use `/find-skills`.
-- The user only needs a simple text list.
-
-## Expected directory structure
-
-Personal skills:
+## 目录结构
 
 ```bash
 ~/.claude/skills/<skill-name>/SKILL.md
 ~/.claude/skills/<skill-name>/skill.meta.yaml
 ```
 
-This skill itself should live at:
+禁止嵌套分类目录。
 
-```bash
-~/.claude/skills/skill-graph/SKILL.md
-```
+## 元数据文件
 
-The command should be:
-
-```text
-/skill-graph
-```
-
-Do not create nested category folders under `skills/`.
-
-Correct:
-
-```bash
-~/.claude/skills/skill-distiller/SKILL.md
-~/.claude/skills/skill-index/SKILL.md
-~/.claude/skills/skill-graph/SKILL.md
-```
-
-Incorrect:
-
-```bash
-~/.claude/skills/meta/skill-distiller/SKILL.md
-~/.claude/skills/meta/skill-graph/SKILL.md
-```
-
-## Metadata file
-
-Each skill should have a metadata file:
-
-```bash
-skill.meta.yaml
-```
-
-Minimal example:
+每个技能须有 `skill.meta.yaml`：
 
 ```yaml
 name: skill-name
-title: Skill Title
+title: 技能标题
 category: 未分类
 scope: personal
 status: active
 version: 0.1.0
 updated: 2026-05-12
+source: local
 
-purpose: One-sentence purpose.
+purpose: 一句话用途描述。
 
 relations:
   coordinates: []
@@ -113,164 +71,80 @@ relations:
   overlaps_with: []
 
 notes:
-  - Add short notes only when they improve graph interpretation.
+  - 仅在能改善图解读时添加简短说明
 ```
 
-Relation targets must be skill names without leading slash.
+关系目标必须是技能名，不加斜杠前缀。
 
-Good:
+## 关系含义
 
-```yaml
-relations:
-  downstream:
-    - skill-index
-```
+| 关系 | 含义 |
+|------|------|
+| `coordinates` | 此技能治理或协调另一技能 |
+| `cooperates_with` | 对等协作 |
+| `upstream` | 此技能依赖另一技能的输出 |
+| `downstream` | 此技能为另一技能提供输入 |
+| `should_run_before` | 通常先于另一技能运行 |
+| `should_run_after` | 通常在另一技能之后运行 |
+| `supersedes` | 替代旧技能 |
+| `overlaps_with` | 与另一技能重叠，可能需要清理 |
 
-Bad:
+## 工作流
 
-```yaml
-relations:
-  downstream:
-    - /skill-index
-```
+每次调用本技能时，必须按以下顺序执行：
 
-## Relation meanings
+1. **扫描缺失元数据**：列出 `~/.claude/skills/` 下所有有 `SKILL.md` 但缺少 `skill.meta.yaml` 的技能
+2. **报告并确认**：将缺失清单展示给用户，询问是否需要补建。不要静默自动生成空壳
+3. **补建元数据**（用户确认后）：根据 SKILL.md 的 frontmatter 和内容手工填写 `skill.meta.yaml`，确保 title、purpose、category、relations 等字段准确
+4. **生成图**：`--graph-only` 重建 `SKILL_GRAPH.html`
+5. **报告结果**：汇总节点数、新增/更新元数据数、孤立节点、断裂关系
 
-Use these relation fields consistently:
-
-| Relation | Chinese label | Meaning |
-|---|---|---|
-| `coordinates` | 协调 | This skill governs or coordinates another skill |
-| `cooperates_with` | 协同 | This skill works peer-to-peer with another skill |
-| `upstream` | 上游 | This skill depends on another skill's output |
-| `downstream` | 下游 | This skill feeds another skill |
-| `should_run_before` | 先于 | This skill usually runs before another skill |
-| `should_run_after` | 后于 | This skill usually runs after another skill |
-| `supersedes` | 替代 | This skill replaces an older skill |
-| `overlaps_with` | 重叠 | This skill overlaps with another and may need cleanup |
-
-## Main command
-
-Generate personal skill graph:
+## 主要命令
 
 ```bash
+# 生成个人技能图
 python ~/.claude/skills/skill-graph/scripts/generate_skill_graph_html.py
-```
 
-Generate graph for a project skill directory:
-
-```bash
+# 生成项目技能目录的图
 python ~/.claude/skills/skill-graph/scripts/generate_skill_graph_html.py --root .claude/skills
-```
 
-Only create missing metadata:
-
-```bash
+# 仅创建缺失的元数据
 python ~/.claude/skills/skill-graph/scripts/generate_skill_graph_html.py --init-meta-only
-```
 
-Only generate HTML from existing metadata:
-
-```bash
+# 仅从现有元数据生成 HTML
 python ~/.claude/skills/skill-graph/scripts/generate_skill_graph_html.py --graph-only
-```
 
-Write to a custom HTML path:
-
-```bash
+# 自定义输出路径
 python ~/.claude/skills/skill-graph/scripts/generate_skill_graph_html.py --out ./SKILL_GRAPH.html
-```
 
-Overwrite existing metadata intentionally:
-
-```bash
+# 覆盖已有元数据（谨慎使用）
 python ~/.claude/skills/skill-graph/scripts/generate_skill_graph_html.py --overwrite-meta
 ```
 
-Use `--overwrite-meta` carefully because it can replace hand-edited relationships.
+`--overwrite-meta` 会替换手动编辑的关系，谨慎使用。
 
-## Default output
-
-The script writes:
+## 默认输出
 
 ```bash
 ~/.claude/skills/SKILL_GRAPH.html
 ```
 
-The HTML is Chinese, single-file, and offline-friendly.
+中文单文件 HTML，离线可用。包含：搜索框、分类筛选、范围筛选、状态筛选、交互式 SVG 关系图、可点击技能详情、关系表、元数据警告、孤立技能列表、清单表。
 
-It includes:
-
-- Search box
-- Category filter
-- Scope filter
-- Status filter
-- Interactive SVG relationship graph
-- Clickable skill details
-- Relationship table
-- Metadata warnings
-- Isolated skill list
-- Inventory table
-
-## Current expected local skills
-
-The current local skill set may include:
+## 推荐协调模型
 
 ```text
-/find-local-skills
-/find-skills
-/math-method-lib
-/ml-traditional-gui
-/skill-distiller
-/skill-graph
-/skill-index
+/find-local-skills → 查本地已有
+/find-skills       → 找外部新增
+/skill-creator     → 从经验蒸馏/创建/改进
+/skill-index       → 路由、分类、治理
+/skill-graph       → 可视化、元数据健康
 ```
 
-The script should not hardcode this list, but it may infer useful default relationships for these names.
+## 安全规则
 
-## Recommended coordination model
-
-Use this mental model:
-
-```text
-/find-local-skills  → 查本地已有 skill，避免重复
-/find-skills        → 找外部新 skill
-/skill-distiller    → 把经验沉淀成 SKILL.md
-/skill-index        → 路由、分类、治理 skill 系统
-/skill-graph        → 生成可视化关系图和 metadata 健康检查
-```
-
-Domain skills such as `/ml-traditional-gui`, `/math-method-lib` should usually be graph leaves unless their metadata explicitly declares relationships.
-
-## Safety rules
-
-- Do not execute arbitrary scripts from other skill folders.
-- Do not overwrite existing `skill.meta.yaml` unless explicitly requested.
-- Do not infer dangerous tool permissions from metadata.
-- Do not treat external skills as safe just because they appear in the graph.
-- Do not turn the graph into the routing source of truth. Use `/skill-index` for routing.
-- Keep this skill focused on metadata and visualization.
-
-## Output expectations
-
-When this skill is used:
-
-- Provide the exact command to run the graph generator.
-- Explain where `skill.meta.yaml` files will be created.
-- Explain where `SKILL_GRAPH.html` will be generated.
-- Summarize isolated skills and broken relationships.
-- Recommend `/skill-index` for taxonomy and routing changes.
-- Recommend `/find-local-skills` for actual duplicate audits.
-- Keep the architecture simple: `skill.meta.yaml + Python + Chinese single-file HTML + Git`.
-
-## Final rule
-
-Use this separation:
-
-```text
-/skill-graph       → visual relationships and metadata health
-/skill-index       → routing, taxonomy, and governance
-/find-local-skills → actual local inventory
-/skill-distiller   → individual skill creation
-/find-skills       → external skill discovery
-```
+- 不执行其他技能目录中的任意脚本
+- 未被明确要求时不覆盖已有 `skill.meta.yaml`
+- 不从元数据推断危险权限
+- 不因在图中出现就假设外部技能安全
+- 图不做路由源（用 `/skill-index`）

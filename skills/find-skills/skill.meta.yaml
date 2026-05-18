@@ -6,20 +6,21 @@ status: active
 version: 0.1.0
 updated: 2026-05-12
 
-purpose: Helps users discover and install agent skills when they ask questions like "how do I do X", "find a skill for X", "is there a skill that can...", or express interest in extending capabilities. This skill should be used when the user is looking for functionality that might exist as an installable skill.
+purpose: 从开放技能生态（skills.sh）中发现和安装技能，验证质量后推荐给用户。
 
 relations:
   coordinates: []
-  cooperates_with: []
+  cooperates_with:
+    - skill-creator
   upstream: []
   downstream:
-    - skill-distiller
+    - skill-creator
     - skill-index
   should_run_before:
-    - skill-distiller
+    - skill-creator
   should_run_after: []
   supersedes: []
   overlaps_with: []
 
 notes:
-  - Auto-generated metadata. Review category, purpose, and relationships.
+  - 发现外部技能后，skill-creator 负责本地适配和中文化

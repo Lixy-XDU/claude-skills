@@ -6,31 +6,28 @@ status: active
 version: 0.1.0
 updated: 2026-05-12
 
-purpose: Coordinate, categorize, route, audit, and maintain local Claude Code skills. Use when the user wants to decide which skill to use, organize skills by function, update the skill index, coordinate find-local-skills, find-skills, and skill-distiller, or prevent local skill sprawl.
+purpose: 协调、分类、路由、审计和维护本地技能系统。维护 SKILLS_INDEX.md，解决技能冲突，决定新技能的分类和存放位置。
 
 relations:
   coordinates:
     - find-local-skills
     - find-skills
-    - skill-distiller
     - skill-graph
     - skill-creator
   cooperates_with:
     - skill-graph
   upstream:
     - find-local-skills
-    - skill-distiller
     - skill-graph
     - skill-creator
   downstream: []
   should_run_before: []
   should_run_after:
     - find-local-skills
-    - skill-distiller
     - skill-creator
   supersedes: []
   overlaps_with: []
 
 notes:
-  - Governs taxonomy, routing, and conflict resolution for all local skills.
-  - Maintains SKILLS_INDEX.md.
+  - 所有本地技能的分类、路由和冲突解决的总协调层
+  - 维护 SKILLS_INDEX.md

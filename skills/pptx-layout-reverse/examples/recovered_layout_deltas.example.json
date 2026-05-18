@@ -1,0 +1,42 @@
+{
+  "metadata": {
+    "source_raw": "pptx_raw_shapes.json",
+    "layouts": "layouts/template_layouts_16x9.json",
+    "match_threshold_in": 4.0
+  },
+  "summary": {
+    "slides": 1,
+    "shapes_considered": 2,
+    "matched_shapes": 2,
+    "unmatched_shapes": 0,
+    "formula_candidates": 1
+  },
+  "slides": [
+    {
+      "slide_index": 0,
+      "layout_name": "formula_explanation",
+      "matches": [
+        {
+          "slot": "formula",
+          "shape_id": 5,
+          "confidence": "high",
+          "distance_in": 0.03,
+          "actual_bbox": [1.2, 2.1, 10.9, 1.1],
+          "template_bbox": [1.2, 2.0, 10.9, 1.0],
+          "delta": [0.0, 0.1, 0.0, 0.1],
+          "is_formula_candidate": true
+        }
+      ]
+    }
+  ],
+  "aggregate_slot_deltas": {
+    "formula_explanation": {
+      "formula": {
+        "samples": 1,
+        "avg_delta": [0.0, 0.1, 0.0, 0.1],
+        "median_delta": [0.0, 0.1, 0.0, 0.1],
+        "max_abs_delta": [0.0, 0.1, 0.0, 0.1]
+      }
+    }
+  }
+}

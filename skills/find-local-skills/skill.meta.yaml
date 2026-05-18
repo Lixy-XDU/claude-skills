@@ -6,22 +6,23 @@ status: active
 version: 0.1.0
 updated: 2026-05-12
 
-purpose: Find, list, inspect, compare, and recommend local Claude Code skills from personal, project, and added skill directories. Use when the user has many local skills and wants to find the right skill, build a skill index, audit duplicates, or understand what installed skills do.
+purpose: 查找、列出、审查本地已安装技能，检测重复和重叠，生成技能索引。
 
 relations:
   coordinates: []
-  cooperates_with: []
+  cooperates_with:
+    - skill-creator
   upstream: []
   downstream:
-    - skill-distiller
+    - skill-creator
     - skill-index
     - skill-graph
   should_run_before:
-    - skill-distiller
+    - skill-creator
     - skill-index
   should_run_after: []
   supersedes: []
   overlaps_with: []
 
 notes:
-  - Auto-generated metadata. Review category, purpose, and relationships.
+  - 审计结果可触发 skill-index 的索引更新和 skill-creator 的技能重组

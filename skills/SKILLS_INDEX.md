@@ -6,7 +6,7 @@
 |---|---|---|
 | 找本地已有 skill | `/find-local-skills` | 查本地安装的 skill，避免重复 |
 | 找外部新 skill | `/find-skills` | 搜索社区/外部 skill |
-| 把经验沉淀成 skill | `/skill-distiller` | 从笔记、调试记录、项目经验中提炼 SKILL.md |
+| 把经验沉淀成 skill | `/skill-creator` | 从笔记、调试记录、项目经验中提炼 SKILL.md |
 | 更新 skills 到最新版本 | `/skill-updater` | 一键 git pull 最新 skills 和 CLAUDE.md |
 | skill 路由/分类/索引管理 | `/skill-index` | 为本文件维护提供路由和分类决策 |
 | skill 关系图/元数据健康 | `/skill-graph` | 生成 SKILL_GRAPH.html 和检查 metadata |
@@ -17,13 +17,9 @@
 | Markdown 转 HTML | `/markdown-to-html` | 微信兼容主题的 MD→HTML 转换 |
 | 从 PDF 提取文本 | `/pdf-extract` | 三级策略提取 PDF 文本，供其他 skill 委托调用 |
 | 构建图可视化物理引擎 | `/force-graph-physics` | 力导向图渲染性能、物理模拟、碰撞检测的权威参考 |
-| 学术英语润色/翻译 | `/nature-polishing` | 12 步流水线打磨至 Nature 风格，含中译英 |
-| 论文图表绘制 | `/nature-figure` | 生成符合 Nature 排版标准的多面板图表（Python/R） |
-| 论文写作/重构 | `/nature-writing` | 从声明、结果、笔记起草 Nature 风格论文章节 |
-| 文献检索 | `/nature-academic-search` | 多源文献搜索、引文验证、MeSH 策略 |
-| 论文转 PPT | `/nature-paper2ppt` | 从论文构建中文 PPT 演示文稿 |
-| 审稿回复 | `/nature-response` | 起草或审计 Nature 系列期刊逐点审稿回复信 |
-| 论文全文解读 | `/nature-reader` | 中英对照全文解读，图文表定位，带源锚点 |
+| 学术写作全流程 | `/nature` | 润色/写作/图表/引用/数据/审稿/检索，调用后展示菜单 |
+| 内容转幻灯片 | `/paper-note-to-ppt-template` | PNG 模板 + python-pptx 生成科研风格 PPT |
+| 论文全文解读/对照阅读 | `/literature-paper-reading` | 中英对照全文解读，图文表定位，源锚点追溯 |
 
 ---
 
@@ -45,8 +41,9 @@
 |---|---|---|---|
 | `math-method-lib` | personal | 按 16 节模板创建或审查数学方法条目 | `/math-method-lib` |
 | `literature-to-math` | personal | 从学术文献 PDF 中提取数学方法入库 | `/literature-to-math` |
-| `literature-paper-reading` | personal | 按 10 维度框架系统阅读论文并产出结构化 Obsidian 笔记 | `/literature-paper-reading` |
+| `literature-paper-reading` | personal | 按 10 维度框架系统阅读论文并产出结构化 Obsidian 笔记；支持中英逐段对照全文阅读、图表裁剪嵌入、源锚点追溯 | `/literature-paper-reading` |
 | `ml-model-reconstructor` | personal | 从 MATLAB 代码逆向重建数学模型、推导与公式 | `/ml-model-reconstructor` |
+| `ml-research-coder` | personal | 将方法笔记/文献笔记转为 MATLAB 开发环境，含项目脚手架、实验、测试 | `/ml-research-coder` |
 
 ## 文档与写作
 
@@ -66,14 +63,14 @@
 
 | Skill | Scope | Purpose | Invocation |
 |---|---|---|---|
-| `nature-polishing` | personal | 12 步润色流水线，学术英语打磨至 Nature 风格（含中译英） | `/nature-polishing` |
-| `nature-writing` | personal | 从声明/结果/笔记起草或重构 Nature 风格论文章节 | `/nature-writing` |
-| `nature-citation` | personal | 为文稿自动匹配 Nature/CNS 系列引用并导出参考文献 | `/nature-citation` |
-| `nature-data` | personal | 准备或审计 Nature 数据可用性声明和 FAIR 元数据 | `/nature-data` |
-| `nature-paper2ppt` | personal | 从论文构建 Nature 风格中文 PPT 演示文稿 | `/nature-paper2ppt` |
-| `nature-reader` | personal | 中英对照全文解读，图文表定位，源锚点保持 | `/nature-reader` |
-| `nature-response` | personal | 起草或审计 Nature 系列期刊逐点审稿回复信 | `/nature-response` |
-| `nature-academic-search` | personal | 多源文献搜索、引文验证、引文文件管理 | `/nature-academic-search` |
+| `nature` | personal | 学术写作全流程工作台：润色、写作、图表、引用、数据声明、审稿回复、文献检索，调用后展示菜单选择 | `/nature` |
+
+## 演示与文档
+
+| Skill | Scope | Purpose | Invocation |
+|---|---|---|---|
+| `paper-note-to-ppt-template` | personal | PNG 模板 + python-pptx 渲染，论文/笔记转科研风格 PPT（组会/答辩/汇报） | `/paper-note-to-ppt-template` |
+| `pptx-layout-reverse` | personal | PPTX 逆向还原为 JSON 布局配置，提取坐标/字号/公式框 | `/pptx-layout-reverse` |
 
 ## 设计与界面
 

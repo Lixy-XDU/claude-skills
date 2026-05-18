@@ -1,0 +1,26 @@
+name: pptx-layout-reverse
+title: PPTX→JSON 逆向还原
+category: 演示与文档
+scope: personal
+status: active
+version: 0.1.0
+updated: 2026-05-19
+source: local
+
+purpose: 将 PowerPoint PPTX 逆向还原为 JSON 布局配置，提取文本框坐标、字体样式、slot 匹配、OMML 公式框、layout delta，用于更新模板参数。
+
+relations:
+  coordinates: []
+  cooperates_with:
+    - paper-note-to-ppt-template
+  upstream:
+    - paper-note-to-ppt-template
+  downstream: []
+  should_run_before: []
+  should_run_after:
+    - paper-note-to-ppt-template
+  supersedes: []
+  overlaps_with: []
+
+notes:
+  - 与 paper-note-to-ppt-template 构成闭环：模板生成 PPTX → 用户手动调整 → 本技能逆向提取位置/字号 → 输出 delta 对比模板基准 → 回写更新 template_layouts_16x9.json 和 theme_tokens.json

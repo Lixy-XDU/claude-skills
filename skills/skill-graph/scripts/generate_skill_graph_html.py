@@ -504,7 +504,7 @@ let offsetX = 0, offsetY = 0;
 let dragSvg = null;                // 拖拽时的 SVG 引用
 let velMap = new Map();            // nodeName → {vx, vy} 所有节点的速度追踪
 let lastDragPos = null;            // 上一次拖拽位置 {x, y}，用于差分算速度
-let vbX = -20, vbY = -20, vbW = 1240, vbH = 840;  // viewBox 状态
+let vbX = -20, vbY = -20, vbW = 1640, vbH = 1040;  // viewBox 状态
 let isPanning = false;             // 平移画布状态
 let panStartX = 0, panStartY = 0;  // 平移起始屏幕坐标
 let panVbX = 0, panVbY = 0;        // 平移起始 viewBox
@@ -752,7 +752,7 @@ function layout(nodes, edges, w, h) {
     .map((e) => [idx.get(e.source), idx.get(e.target)])
     .filter(([a, b]) => a != null && b != null);
 
-  const REPULSE = 3000, SPRING = 0.006, IDEAL = 100, DAMP = 0.85;
+  const REPULSE = 3000, SPRING = 0.006, IDEAL = 300, DAMP = 0.85;
   const vel = arr.map(() => ({ x: 0, y: 0 }));
   for (let step = 0; step < 220; step++) {
     // 斥力
@@ -767,12 +767,11 @@ function layout(nodes, edges, w, h) {
         vel[j].x -= fx; vel[j].y -= fy;
       }
     }
-    // 引力（异类边弹力减弱）
+    // 引力（随距离平方正比，低于 IDEAL 变斥力；异类边减弱）
     for (const [a, b] of links) {
       const dx = arr[b].x - arr[a].x, dy = arr[b].y - arr[a].y;
       const d = Math.sqrt(dx * dx + dy * dy) + 0.01;
-      const k = jaccard(nodes[a], nodes[b]) ? SPRING : SPRING * 0.25;
-      const f = (d - IDEAL) * k;
+      const f = (d - IDEAL) * d * (jaccard(nodes[a], nodes[b]) ? 2e-5 : 0.5e-5);
       const fx = (dx / d) * f, fy = (dy / d) * f;
       vel[a].x += fx; vel[a].y += fy;
       vel[b].x -= fx; vel[b].y -= fy;
@@ -864,7 +863,7 @@ function resolveCollisions() {
   const N = nodes.length;
   const arr = nodes.map((n) => ({...posMap.get(n.name)}));
   const MIN_DIST = 20;        // 最小间距（2 × 半径 + 14px padding）
-  const svgW = 1200, svgH = 800;
+  const svgW = 1600, svgH = 1000;
 
   for (let step = 0; step < 80; step++) {
     let maxOverlap = 0;
@@ -890,8 +889,8 @@ function resolveCollisions() {
       arr[i].x = Math.max(80, Math.min(svgW - 80, arr[i].x));
       arr[i].y = Math.max(80, Math.min(svgH - 80, arr[i].y));
     }
-    // 边弹簧：拉向理想距离（异类边弹力减弱）
-    const IDEAL = 100, SPRING_K = 0.005;
+    // 边弹簧：随距离平方正比吸引，低于 IDEAL 变斥力（异类边减弱）
+    const IDEAL = 300, SPRING_K = 1e-5;
     const visEdges = DATA.edges.filter(e => nodes.some(n => n.name === e.source) && nodes.some(n => n.name === e.target));
     for (const e of visEdges) {
       const ai = nodes.findIndex(n => n.name === e.source);
@@ -901,7 +900,7 @@ function resolveCollisions() {
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
       const k = jaccard(nodes[ai], nodes[bi]) ? SPRING_K : SPRING_K * 0.25;
-      const f = (d - IDEAL) * k;
+      const f = (d - IDEAL) * d * k;
       a.x += (dx / d) * f;
       a.y += (dy / d) * f;
       b.x -= (dx / d) * f;
@@ -921,9 +920,9 @@ function resolveDragCollisions() {
   const dragPos = posMap.get(draggedNode);
   if (!dragPos) return;
   const MIN_DIST = 20;
-  const svgW = 1200, svgH = 800;
+  const svgW = 1600, svgH = 1000;
 
-  const IDEAL = 100, SPRING = 0.005;
+  const IDEAL = 300, SPRING = 1e-5;
   const visEdges = DATA.edges.filter(e => nodes.some(n => n.name === e.source) && nodes.some(n => n.name === e.target));
   // 推拉交错：每步同时做碰撞推开 + 弹簧拉回
   for (let step = 0; step < 10; step++) {
@@ -957,7 +956,7 @@ function resolveDragCollisions() {
       const srcNode = nodes.find(n => n.name === e.source);
       const tgtNode = nodes.find(n => n.name === e.target);
       const k = (srcNode && tgtNode && jaccard(srcNode, tgtNode)) ? SPRING : SPRING * 0.25;
-      const f = (d - IDEAL) * k;
+      const f = (d - IDEAL) * d * k;
       const srcIsDrag = e.source === draggedNode;
       const tgtIsDrag = e.target === draggedNode;
       if (!srcIsDrag && !(selected ===e.source)) { a.x += (dx / d) * f * 0.5; a.y += (dy / d) * f * 0.5; }
@@ -1063,9 +1062,9 @@ function physicsTick(now) {
       v.vx *= 0.95; v.vy *= 0.95;
       p.x += v.vx; p.y += v.vy;
       if (p.x < 80) { p.x = 80; v.vx = Math.abs(v.vx) * 0.4; }
-      if (p.x > 1200 - 80) { p.x = 1200 - 80; v.vx = -Math.abs(v.vx) * 0.4; }
+      if (p.x > 1600 - 80) { p.x = 1600 - 80; v.vx = -Math.abs(v.vx) * 0.4; }
       if (p.y < 80) { p.y = 80; v.vy = Math.abs(v.vy) * 0.4; }
-      if (p.y > 800 - 80) { p.y = 800 - 80; v.vy = -Math.abs(v.vy) * 0.4; }
+      if (p.y > 1000 - 80) { p.y = 1000 - 80; v.vy = -Math.abs(v.vy) * 0.4; }
     }
 
     // 清理低速
@@ -1105,8 +1104,8 @@ function physicsTick(now) {
       }
     }
 
-    // 边弹簧（异类边弹力减弱）
-    const IDEAL = 100, SPRING_K = 0.005;
+    // 边弹簧：随距离平方正比吸引，低于 IDEAL 变斥力（异类边减弱）
+    const IDEAL = 300, SPRING_K = 1e-5;
     const visEdges = DATA.edges.filter(e => nodes.some(n => n.name === e.source) && nodes.some(n => n.name === e.target));
     for (const e of visEdges) {
       const ai = nodes.findIndex(n => n.name === e.source);
@@ -1117,7 +1116,7 @@ function physicsTick(now) {
       const dx = b.x - a.x, dy = b.y - a.y;
       const d = Math.sqrt(dx * dx + dy * dy) + 0.001;
       const k = jaccard(nodes[ai], nodes[bi]) ? SPRING_K : SPRING_K * 0.25;
-      const f = (d - IDEAL) * k;
+      const f = (d - IDEAL) * d * k;
       if (!(selected ===nodes[ai].name)) { a.x += (dx / d) * f; a.y += (dy / d) * f; }
       if (!(selected ===nodes[bi].name)) { b.x -= (dx / d) * f; b.y -= (dy / d) * f; }
     }
@@ -1156,10 +1155,10 @@ function updateViewBox() {
   const svg = $("graph");
   svg.setAttribute("viewBox", `${vbX} ${vbY} ${vbW} ${vbH}`);
   const btn = $("zoomReset");
-  const isDefault = Math.abs(vbW - 1240) < 10 && Math.abs(vbH - 840) < 10;
+  const isDefault = Math.abs(vbW - 1640) < 10 && Math.abs(vbH - 1040) < 10;
   btn.classList.toggle("visible", !isDefault);
 }
-function resetZoom() { vbX = -20; vbY = -20; vbW = 1240; vbH = 840; updateViewBox(); }
+function resetZoom() { vbX = -20; vbY = -20; vbW = 1640; vbH = 1040; updateViewBox(); }
 
 function renderGraph(nodes) {
   const svg = $("graph");
@@ -1183,7 +1182,7 @@ function renderGraph(nodes) {
 
   // 初始化位置
   if (posMap.size === 0 || posMap.size !== nodes.length) {
-    posMap = layout(nodes, edges, 1200, 800);
+    posMap = layout(nodes, edges, 1600, 1000);
   }
 
   // 节点集变了 → 全量重建；否则只更新位置

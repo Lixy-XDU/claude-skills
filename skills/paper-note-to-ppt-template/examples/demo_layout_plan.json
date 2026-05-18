@@ -1,0 +1,101 @@
+{
+  "deck_meta": {
+    "title": "论文解读：弱监督训练方法",
+    "language": "zh-CN",
+    "theme": "deep_blue_green_research",
+    "template_set": "user_png_templates"
+  },
+  "slides": [
+    {
+      "slide_no": 1,
+      "layout": "title",
+      "title": "弱监督训练降低了标注成本",
+      "slots": {
+        "title": "弱监督训练降低了标注成本",
+        "subtitle": "论文阅读汇报｜方法、实验与局限",
+        "meta": ["汇报人：XXX", "单位：XXX", "日期：2026.05"]
+      },
+      "speaker_notes": "开场说明本文关注如何降低高质量标注数据需求。"
+    },
+    {
+      "slide_no": 2,
+      "layout": "agenda",
+      "title": "目录",
+      "slots": {
+        "items": ["研究背景", "问题定义", "方法总览", "实验设置", "主要结果", "总结讨论"]
+      },
+      "speaker_notes": "简要介绍今天的汇报结构。"
+    },
+    {
+      "slide_no": 3,
+      "layout": "section",
+      "title": "研究背景",
+      "slots": {
+        "section_no": "01",
+        "title": "研究背景",
+        "subtitle": "为什么弱监督训练值得关注"
+      }
+    },
+    {
+      "slide_no": 4,
+      "layout": "three_column",
+      "title": "论文贡献可以拆成三个层次",
+      "slots": {
+        "col_1": {"title": "问题", "body": "高质量标注数据昂贵，限制模型扩展。"},
+        "col_2": {"title": "方法", "body": "先弱监督预训练，再少量标注微调。"},
+        "col_3": {"title": "结果", "body": "在多个任务上接近全监督效果。"}
+      },
+      "evidence_refs": ["abstract", "section 4"]
+    },
+    {
+      "slide_no": 5,
+      "layout": "one_column",
+      "title": "方法核心是监督损失与一致性约束的组合",
+      "slots": {
+        "formula": {
+          "kind": "formula",
+          "latex": "L = L_{sup} + \\lambda L_{consistency}"
+        },
+        "body": "核心损失函数由监督损失项和一致性约束项组成，λ 控制弱监督影响权重。",
+        "bullets": [
+          "监督项保证方向正确",
+          "一致性项提升稳定性",
+          "权重 λ 控制弱监督影响"
+        ]
+      },
+      "evidence_refs": ["section 3", "equation 2"]
+    },
+    {
+      "slide_no": 6,
+      "layout": "image_text",
+      "title": "主实验显示低标注场景下优势更明显",
+      "slots": {
+        "main_image": {"image_path": "assets/figures/figure_1.png", "caption": "主实验结果"},
+        "side_1": {"title": "低标注优势", "body": "标注数据越少，相对提升越明显。"},
+        "side_2": {"title": "稳定性", "body": "不同随机种子下结果波动较小。"},
+        "bottom_1": {"title": "数据集", "body": "多个任务统一评估。"},
+        "bottom_2": {"title": "指标", "body": "关注准确率和标注效率。"}
+      },
+      "evidence_refs": ["figure 3", "section 4.2"]
+    },
+    {
+      "slide_no": 7,
+      "layout": "one_column",
+      "title": "局限性主要来自弱标签质量和任务迁移",
+      "slots": {
+        "title": "局限性主要来自弱标签质量和任务迁移",
+        "bullets": ["弱标签噪声会影响上限", "跨任务泛化仍需额外验证", "复杂场景下需要更细粒度分析"]
+      },
+      "evidence_refs": ["limitations"]
+    },
+    {
+      "slide_no": 8,
+      "layout": "closing",
+      "slots": {
+        "title": "谢谢",
+        "subtitle": "欢迎交流与提问",
+        "contact": ""
+      }
+    }
+  ]
+}

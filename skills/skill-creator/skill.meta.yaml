@@ -1,23 +1,23 @@
 name: skill-creator
 title: 技能创建器
 category: 元技能
-scope: external
+scope: personal
 status: active
-version: 0.1.0
-updated: 2026-05-13
+version: 0.2.0
+updated: 2026-05-15
 
-purpose: Create new skills, modify and improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, edit, or optimize an existing skill, run evals to test a skill, benchmark skill performance with variance analysis, or optimize a skill's description for better triggering accuracy.
+purpose: 创建、改进、测试和从经验中蒸馏技能。支持 distill（从笔记/调试记录提炼）、create（从零创建并迭代测试）、improve（优化触发率）三种模式。
 
 relations:
   coordinates: []
-  cooperates_with: [skill-distiller]
+  cooperates_with: []
   upstream: []
   downstream: [skill-index, skill-graph]
   should_run_before: [skill-index, skill-graph]
   should_run_after: []
-  supersedes: []
+  supersedes: [skill-distiller]
   overlaps_with: []
 
 notes:
-  - 与 skill-distiller 互补：skill-creator 从需求创造，skill-distiller 从经验提炼。
-  - 产出新 skill 后，skill-index 负责分类路由，skill-graph 负责关系图更新。
+  - 合并了 skill-distiller 的"从经验蒸馏"功能，统一为 distill 模式
+  - 产出新 skill 后，skill-index 负责分类路由，skill-graph 负责关系图更新

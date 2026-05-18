@@ -1,7 +1,7 @@
 ---
 name: literature-paper-reading
-description: 按 10 维度框架系统性阅读学术论文，产出结构化 Obsidian 阅读笔记。覆盖基本信息、研究背景、核心观点、理论基础、方法、论证逻辑、结果、创新点、局限、启发。适用场景：用户提供 PDF 要求"读论文""分析论文""论文笔记"时使用。
-argument-hint: "[pdf-path-or-paper-topic]"
+description: 按 10 维度框架系统性阅读学术论文，产出结构化 Obsidian 阅读笔记；支持中英文逐段对照全文阅读、图表裁剪嵌入、源锚点追溯。适用场景：用户提供 PDF/DOI/arXiv/文本要求"读论文""分析论文""论文笔记""中英文对照""全文翻译"时使用。
+argument-hint: "[pdf-path | doi | arxiv | topic]"
 disable-model-invocation: false
 ---
 
@@ -9,9 +9,13 @@ disable-model-invocation: false
 
 按照 10 维度信息框架系统性阅读一篇论文，产出结构化 Obsidian 阅读笔记。不是简单摘要，而是深入理解论文的"为什么做、怎么做、做出了什么、是否可信、有什么价值"。
 
+当用户要求中英文对照阅读时，额外产出双语阅读器包（`paper.md` + `source_map.json` + `translation_notes.md` + `assets/`），逐段保留原文与中文翻译对照，图表裁剪嵌入首次实质引用处，每个正文块都有稳定的源锚点可供回溯。
+
 ## 使用场景
 
 - 用户提供 PDF 路径，要求"读论文""分析论文""做论文笔记"
+- 用户要求"中英文对照""原文对照""全文翻译""翻译解读"
+- 用户提供 DOI / arXiv 链接或粘贴论文文本
 - 用户需要按照清单框架系统理解一篇论文
 - 用户想生成可用于 Obsidian 的论文阅读笔记
 - 用户在讨论中提到某篇论文，需要结构化分析
@@ -23,6 +27,18 @@ disable-model-invocation: false
 - 纯数学概念问答（没有具体论文要读）→ 直接对话
 - 已经仔细读过，只需讨论论文的某个具体问题 → 直接对话
 - 批量文献综述/元分析 → 需要单独设计策略
+- 仅需搜索引用 → 用 `/nature-citation`
+
+## 两种输出模式
+
+本 skill 按用户意图自动选择模式：
+
+| 模式 | 触发词 | 产出 |
+|------|--------|------|
+| **分析模式**（默认） | "读论文""分析论文""论文笔记" | 10 维度 Obsidian 分析笔记（单文件） |
+| **对照模式** | "中英文对照""原文对照""全文翻译""翻译解读" | 分析笔记 + 双语阅读器包（4 件套） |
+
+无论哪种模式，10 维度分析笔记始终产出。对照模式在此基础上增加双语阅读器包。严禁在用户要求全文翻译时只给中文摘要或只翻译摘要引言。
 
 ## 核心规则
 
@@ -32,18 +48,19 @@ disable-model-invocation: false
 - **区分事实与观点**：论文陈述的事实（数据、结果）与作者观点（解释、推断）分开记录
 - **输出到收件箱**：Obsidian 笔记默认写入用户指定的收件箱路径，不直接写入正式分类目录
 - **先读再写**：必须先通读全文（或关键章节）再生成笔记，不能只读摘要就写
+- **对照模式不可降级**：用户要求中英文对照/全文翻译时，必须产出逐段 Original/中文 对，不能退化为纯中文摘要或只翻摘要引言
 
-## PDF 文本提取
+## 输入源识别
 
-PDF 文本提取统一委托给 `/pdf-extract`。详见该 skill 的脚本调用协议和三级读取策略。本 skill 不自行实现 PDF 解析。
+根据用户提供的材料确定输入类型：
 
-### 路径询问协议
+- **PDF 文件**（可选文本 / 扫描版）：委托 `/pdf-extract` 提取文本。扫描版 PDF 经 OCR 后需额外警惕公式识别质量
+- **DOI 链接**：通过 `nature-academic-search` 获取元数据和全文
+- **arXiv 链接**：直接获取摘要和 PDF
+- **出版方 HTML**：直接从网页提取正文
+- **粘贴文本**：用户直接提供的论文文本
 
-按 CLAUDE.md 第 2 节规则，**首次使用前必须向用户询问以下路径**（一次问全）：
-
-> 为了继续任务，请提供以下路径（Windows 格式，如 `D:\xxx\yyy`）：
-> 1. PDF 文件路径：
-> 2. Obsidian 收件箱路径（AI 生成笔记的落地点）：
+然后快速判断论文类型（发现/机制论文、方法/算法论文、资源/数据集论文、会议论文、综述/观点），这决定了图表与正文耦合的紧密程度。
 
 ## 工作流
 
@@ -51,25 +68,83 @@ PDF 文本提取统一委托给 `/pdf-extract`。详见该 skill 的脚本调用
 
 - 若用户提供了 PDF 路径，调用 `/pdf-extract` 脚本获取 `.txt` + `.meta.json`
 - 检查 `meta.json` 中的 `tier` 字段：Tier 2 加密需确认密码已处理、Tier 3 OCR 结果需额外警惕公式识别质量
-- 若用户只提供了论文标题/主题（无 PDF），基于对话上下文或向用户询问关键信息
+- 若用户提供了 DOI/arXiv/HTML/粘贴文本，直接从对应源提取
+- 若用户只提供了论文标题/主题（无全文），基于对话上下文或向用户询问关键信息
 
-### 第二步：逐维度提取
+### 第二步：构建源映射（对照模式必做，分析模式可选）
+
+处理全文，不要只停在摘要或前几页。
+
+创建稳定的源块 ID：
+
+- `S001`, `S002`, ... 正文文本
+- `C001`, `C002`, ... 图注/表注
+- `F001`, `F002`, ... 图
+- `T001`, `T002`, ... 表
+
+每个块记录：页码、块类型、原始文本、翻译、阅读序号、附近图/表引用、置信度。长论文加页码索引。
+
+### 第三步：逐维度提取
 
 按照下面的十个维度，从论文中系统性提取信息。每读完一个相关章节就记录，避免读完再回忆。
 
-### 第三步：回答五个核心问题
+### 第四步：翻译（对照模式）
+
+对照模式下翻译每个可提取的实质性块，规则：
+
+- 保留专业术语，除非标准中文译名明显更好
+- 基因名、蛋白质名、公式、模型名、符号保持不变
+- 引用、上下标、数值不变
+- 不把方法细节压缩成模糊表述
+- 保持原文段落形式，不转为要点列表
+- 保持段落顺序和章节顺序
+- OCR 弱处标记不确定，不要猜测
+- 不静默跳过 Methods、局限性、数据可用性、代码可用性、利益冲突、扩展图注
+- 论文过长无法一次处理时，按页/节增量写入 `paper.md`，标记待处理块
+
+### 第五步：提取图表并放置（对照模式）
+
+不追求逐像素复刻 PDF 版面，而是保持语义邻近。
+
+- 将每张图/表裁剪到 `assets/`，放置在正文中首次实质引用的位置
+- 图注与图/表保持绑定
+- 保留英文原注和中文图注翻译
+- 表对论点至关重要时，放在解读该表的段落附近
+- 后面章节再次提及同一图/表时，链回已插入的图/表块，不重复
+- 裁剪只取图/表内容区域，排除页眉页脚和周围正文
+- 裁剪框不确定时标注为近似
+
+图表块格式：
+
+```markdown
+<a id="F001"></a>
+### Fig. 1. [简短中文标题]
+
+**放置位置：** p.3 S012 附近
+**来源：** p.4 C001
+
+![Fig. 1](assets/fig1.png)
+
+**Original caption:** [图注原文]
+
+**中文图注:** [图注翻译]
+
+**阅读提示:** [简要说明图中应关注什么]
+```
+
+### 第六步：回答五个核心问题
 
 用五个核心问题作为理解自检。如果任何一个回答不清楚，说明还需要回到论文中确认。
 
-### 第四步：生成结构化笔记
+### 第七步：生成结构化笔记
 
-按输出模板格式组装完整的 Obsidian 阅读笔记，包含 YAML frontmatter。
+按输出模板格式组装完整的 Obsidian 阅读笔记，包含 YAML frontmatter。对照模式下额外生成双语阅读器包。
 
-### 第五步：质量自检
+### 第八步：质量自检
 
 按验证清单逐项核对，修正缺失或含糊的项目。
 
-### 第六步：写入文件
+### 第九步：写入文件
 
 将笔记写入 Obsidian 收件箱。写入前向用户确认路径。
 
@@ -203,6 +278,8 @@ PDF 文本提取统一委托给 `/pdf-extract`。详见该 skill 的脚本调用
 
 ## 输出模板
 
+### 分析模式模板（10 维度笔记）
+
 生成的 Obsidian 笔记使用以下结构：
 
 ```markdown
@@ -276,6 +353,57 @@ status: draft
 - [[相关论文]]
 ```
 
+### 对照模式双语块模板
+
+对照模式下，正文每个实质性段落的双语格式：
+
+```markdown
+<a id="S001"></a>
+**Source:** p.1 S001
+
+**Original:** [源段落]
+
+**中文:** [忠实的中文翻译]
+```
+
+### 对照模式输出文件包
+
+- `paper.md`：含元数据头、页码/章节索引、逐段 Original/中文 对、图表卡片、术语表、阅读提示
+- `source_map.json`：稳定源锚点，结构见下方 schema
+- `translation_notes.md`：术语记录、不确定性说明、版面布局备注
+- `assets/`：裁剪后的图和表
+- `reader.html`：仅用户显式要求浏览器预览时生成，不作为默认产物
+
+`source_map.json` schema：
+
+```json
+{
+  "paper": {
+    "title": "", "venue": "", "source_type": "pdf|html|doi|arxiv|text",
+    "language": "en", "source_path": ""
+  },
+  "blocks": [
+    {
+      "id": "S001", "page": 1,
+      "type": "heading|paragraph|caption|table|table_row|note",
+      "order": 1, "original_text": "", "translation": "",
+      "bbox": [0,0,0,0], "confidence": "high|medium|low",
+      "refs": ["F001"], "insert_after": "S001"
+    }
+  ],
+  "pages": [{ "page": 1, "block_ids": ["S001","S002"] }],
+  "figures": [
+    {
+      "id": "F001", "page": 3, "caption_id": "C001",
+      "image_path": "", "bbox": [0,0,0,0],
+      "placement_hint": "near_first_mention",
+      "placed_after": "S012", "alt_text": ""
+    }
+  ],
+  "glossary": [{ "term": "", "translation": "", "note": "" }]
+}
+```
+
 ## 反模式
 
 - **只读摘要就写笔记**：摘要无法提供方法细节、论证质量和局限性的充分信息
@@ -286,7 +414,11 @@ status: draft
 - **不检查五个核心问题**：生成笔记后不自检，导致表面覆盖了十个维度但深层理解缺失
 - **在不问路径的情况下直接写入 Obsidian**：违反 CLAUDE.md 路径规则
 - **把不相关的论文强行套模板**：元分析、系统综述、立场文章等可能需要不同的阅读策略
-- **在本 skill 里自行实现 PDF 提取逻辑**：应一律调 `/pdf-extract`，不重复造轮子
+- **在本 skill 里自行实现 PDF 提取逻辑**：PDF 文本提取一律调 `/pdf-extract`，不重复造轮子
+- **把全文翻译降级为摘要**：用户要求中英文对照时，只给中文摘要或只翻摘要引言
+- **静默跳过 Methods/局限性/数据可用性**：对照模式下这些章节必须翻译
+- **用整页截图代替图表裁剪**：除非无法更紧裁剪，否则必须取最小包围框
+- **脱离源锚点做结论**：跟进问题必须引用具体的块 ID 和页码
 
 ## 验证清单
 
@@ -295,38 +427,68 @@ status: draft
 - [ ] 十个维度每个都有内容（含"未提及"标注）
 - [ ] 五个核心问题每个都有明确答案
 - [ ] 公式使用 `$...$` / `$$...$$`，无 Unicode 近似
-- [ ] 不确���处有 `<!-- TODO: ... -->` 标记
+- [ ] 不确定处有 `<!-- TODO: ... -->` 标记
 - [ ] 区分了事实陈述与作者观点
 - [ ] 创新点具体（不只是说"有创新"）
 - [ ] 局限性包含自己的判断（不只是复述作者的"研究不足"）
 - [ ] Frontmatter 含 `review-needed` 标签
 - [ ] 相关链接区已填候选双链
 
+对照模式额外校验：
+
+- [ ] `paper.md` 包含 `**Original:**` 和 `**中文:**` 块对
+- [ ] `paper.md` 中每个图/表链接在 `assets/` 下存在对应文件
+- [ ] `assets/` 中每个图/表在 `paper.md` 中有对应卡片和源指针
+- [ ] `source_map.json` 合法 JSON，含全部源块 ID
+- [ ] `translation_notes.md` 记录了跳过、不确定或草稿内容
+
+## 跟进问题源锚点追溯
+
+对照模式产出文件后，用户跟进提问时：
+
+- 先定位最相关的源块
+- 从论文本身回答，不从记忆
+- 引用精确的块 ID 和页码
+- 答案依赖图/表时同时引用图和图注
+- 论文不支持某论断时明确说"原文未明确说明"
+- 综合多个块的答案列出所有支撑位置
+
+引用格式示例：`p.4 S012-S013`、`Fig. 2 caption`、`Table 1`
+
 ## 与其他 skill 的协作
 
 - **`/pdf-extract`**：PDF 文本提取统一委托给此 skill（三级策略：PyMuPDF → qpdf 解密 → OCR）
+- **`/nature-academic-search`**：DOI 查找、多源文献检索，可作为本 skill 的上游输入
 - **`/literature-to-math`**：本 skill 产出全文理解笔记后，若论文含未入库的数学方法，跟进调用 `/literature-to-math` 提取入库
 - **`/math-method-lib`**：本 skill 产出的方法名称可作为 `/math-method-lib` 的候选条目参考
-- 协作顺序：`/pdf-extract`（提取文本）→ `literature-paper-reading`（全文理解）→ `/literature-to-math`（数学方法提取）→ `/math-method-lib`（方法入库）
+- **`/nature-writing`**：对照模式产出的阅读器可作为学术写作的参考资料
+- **`/content-to-slides`**：分析笔记或对照阅读器均可作为演示文稿的论文模式输入
+
+协作链 A（数学方法提取）：
+`/pdf-extract` → `literature-paper-reading` → `/literature-to-math` → `/math-method-lib`
+
+协作链 B（学术写作/发表）：
+`/nature-academic-search` → `literature-paper-reading` → `/nature-writing` / `/content-to-slides`
 
 ## 输出期望
 
 1. 一篇完整的 Obsidian 笔记（Markdown），包含上述 10 节 + 五问自检 + 相关链接
 2. 文件名：`论文阅读-<论文简称>.md`，存入用户指定的收件箱路径
-3. 输出后简要报告：哪些维度信息充分、哪些维度论文自身覆盖不足、建议人工复核的部分
+3. 对照模式额外产出：`paper.md`、`source_map.json`、`translation_notes.md`、`assets/`
+4. 输出后简要报告：哪些维度信息充分、哪些维度论文自身覆盖不足、建议人工复核的部分
 
 ---
 
 ## Index handoff
 
-Recommended category: 数学与方法库
+Recommended category: 数学与方法库, 学术写作与出版
 Recommended scope: personal
 Recommended path: ~/.claude/skills/literature-paper-reading/SKILL.md
 
 Index entry:
 
-| `literature-paper-reading` | personal | 按 10 维度框架系统阅读论文并产出结构化 Obsidian 笔记 | `/literature-paper-reading` |
+| `literature-paper-reading` | personal | 按 10 维度框架系统阅读论文并产出结构化 Obsidian 笔记；支持中英文逐段对照全文阅读、图表裁剪嵌入、源锚点追溯 | `/literature-paper-reading` |
 
 Potential overlap:
 - `/literature-to-math` 覆盖数学方法提取子任务，两者互补不重叠
-- 运行 `/find-local-skills literature` 可检查 literature 前缀家族的完整覆盖
+- `/nature-reader` 功能已合并至本 skill，标记为 superseded

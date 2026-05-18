@@ -13,10 +13,9 @@ relations:
   cooperates_with:
     - skill-index
     - find-local-skills
-    - skill-distiller
+    - skill-creator
   upstream:
     - find-local-skills
-    - skill-distiller
     - skill-creator
     - force-graph-physics
   downstream:
@@ -24,7 +23,6 @@ relations:
   should_run_before: []
   should_run_after:
     - find-local-skills
-    - skill-distiller
     - skill-creator
   supersedes: []
   overlaps_with: []

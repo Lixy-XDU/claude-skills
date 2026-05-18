@@ -1,0 +1,98 @@
+{
+  "canvas": {
+    "width": 13.333,
+    "height": 7.5,
+    "unit": "inch"
+  },
+  "template_aliases": {
+    "title": ["标题模板.png", "标题模板.jpg", "title.png", "title.jpg"],
+    "agenda": ["目录模板.png", "目录模板.jpg", "agenda.png", "catalog.png"],
+    "section": ["子标题模板.png", "子标题模板.jpg", "section.png", "subtitle.png"],
+    "one_column": ["单列模板.png", "单列模板.jpg", "one_column.png", "single_column.png"],
+    "two_column": ["两列模板.png", "两列模板.jpg", "two_column.png"],
+    "three_column": ["三列模板.png", "三列模板.jpg", "three_column.png"],
+    "image_text": ["图文模板.png", "图文模板.jpg", "image_text.png", "figure.png"],
+    "closing": ["结尾模板.png", "结尾模板.jpg", "closing.png", "thanks.png"]
+  },
+  "layouts": {
+    "title": {
+      "template_key": "title",
+      "description": "标题页。大面积留白区用于叠加主标题、副标题和元信息。",
+      "slots": {
+        "title": {"kind": "text", "bbox": [0.85, 1.95, 9.15, 0.95], "style": "cover_title", "max_chars": 28, "max_lines": 1},
+        "subtitle": {"kind": "text", "bbox": [0.9, 3.25, 6.5, 0.52], "style": "cover_subtitle", "max_chars": 34, "max_lines": 1},
+        "meta": {"kind": "inline_meta", "bbox": [0.9, 4.55, 7.6, 0.55], "style": "meta", "max_items": 3}
+      }
+    },
+    "agenda": {
+      "template_key": "agenda",
+      "description": "目录页。模板中预留六个条目框。",
+      "slots": {
+        "items": {"kind": "agenda_items", "style": "agenda", "max_items": 6,
+          "bboxes": [[2.44, 1.94, 4.95, 0.51], [7.80, 1.94, 4.95, 0.51], [2.44, 3.33, 4.95, 0.51], [7.80, 3.33, 4.95, 0.51], [2.44, 4.71, 4.95, 0.51], [7.80, 4.71, 4.95, 0.51]]}
+      }
+    },
+    "section": {
+      "template_key": "section",
+      "description": "章节 / 子标题页。中部科技边框用于章节标题。",
+      "slots": {
+        "section_no": {"kind": "text", "bbox": [1.55, 2.05, 1.0, 0.45], "style": "section_no", "max_chars": 4, "max_lines": 1},
+        "title": {"kind": "text", "bbox": [1.75, 2.45, 6.6, 0.78], "style": "section_title", "max_chars": 18, "max_lines": 1},
+        "subtitle": {"kind": "text", "bbox": [1.8, 3.25, 6.2, 0.45], "style": "section_subtitle", "max_chars": 36, "max_lines": 1}
+      }
+    },
+    "one_column": {
+      "template_key": "one_column",
+      "description": "单列页。中间大卡片可放观点、公式、大图或要点。标题顶部居中，正文在卡片区域内。",
+      "slots": {
+        "title": {"kind": "text", "bbox": [1.55, 0.50, 10.2, 0.40], "style": "slide_title", "max_chars": 34, "max_lines": 1},
+        "body": {"kind": "text", "bbox": [1.65, 1.15, 9.9, 1.2], "style": "body", "max_chars": 160, "max_lines": 5},
+        "bullets": {"kind": "bullets", "bbox": [1.65, 2.55, 9.9, 3.2], "style": "bullet", "max_items": 5, "max_chars_each": 36},
+        "formula": {"kind": "formula", "bbox": [1.8, 1.50, 9.7, 1.50], "style": "formula"},
+        "image": {"kind": "image", "bbox": [1.55, 1.15, 10.15, 5.20], "fit": "contain"},
+        "caption": {"kind": "caption", "bbox": [1.65, 6.45, 9.9, 0.30], "style": "caption", "max_chars": 60}
+      }
+    },
+    "two_column": {
+      "template_key": "two_column",
+      "description": "两列页。适合对比、左文右图、方法和结果。标题顶部居中。",
+      "slots": {
+        "title": {"kind": "text", "bbox": [1.0, 0.50, 11.3, 0.40], "style": "slide_title", "max_chars": 36, "max_lines": 1},
+        "left": {"kind": "mixed_box", "bbox": [1.0, 1.05, 5.45, 5.95], "style": "box_text", "max_chars": 220},
+        "right": {"kind": "mixed_box", "bbox": [6.85, 1.05, 5.45, 5.95], "style": "box_text", "max_chars": 220}
+      }
+    },
+    "three_column": {
+      "template_key": "three_column",
+      "description": "三列页。适合三个贡献、三个阶段、三个发现。标题顶部居中。",
+      "slots": {
+        "title": {"kind": "text", "bbox": [1.0, 0.50, 11.3, 0.40], "style": "slide_title", "max_chars": 36, "max_lines": 1},
+        "col_1": {"kind": "mixed_box", "bbox": [1.0, 1.05, 3.5, 5.95], "style": "box_text", "max_chars": 130},
+        "col_2": {"kind": "mixed_box", "bbox": [4.9, 1.05, 3.5, 5.95], "style": "box_text", "max_chars": 130},
+        "col_3": {"kind": "mixed_box", "bbox": [8.8, 1.05, 3.5, 5.95], "style": "box_text", "max_chars": 130}
+      }
+    },
+    "image_text": {
+      "template_key": "image_text",
+      "description": "图文页。适合主图 + 多个辅助说明或多个实验图。",
+      "slots": {
+        "title": {"kind": "text", "bbox": [0.9, 0.42, 11.5, 0.4], "style": "slide_title", "max_chars": 36, "max_lines": 1},
+        "main_image": {"kind": "image", "bbox": [0.95, 1.0, 7.9, 4.05], "fit": "contain"},
+        "side_1": {"kind": "mixed_box", "bbox": [9.1, 1.0, 3.25, 1.85], "style": "box_text", "max_chars": 80},
+        "side_2": {"kind": "mixed_box", "bbox": [9.1, 3.35, 3.25, 1.85], "style": "box_text", "max_chars": 80},
+        "bottom_1": {"kind": "mixed_box", "bbox": [2.0, 5.4, 3.8, 1.0], "style": "box_text_small", "max_chars": 70},
+        "bottom_2": {"kind": "mixed_box", "bbox": [6.1, 5.4, 3.8, 1.0], "style": "box_text_small", "max_chars": 70},
+        "caption": {"kind": "caption", "bbox": [1.1, 5.05, 7.3, 0.28], "style": "caption", "max_chars": 55}
+      }
+    },
+    "closing": {
+      "template_key": "closing",
+      "description": "结尾页。适合谢谢、Q&A、致谢。",
+      "slots": {
+        "title": {"kind": "text", "bbox": [3.25, 2.50, 6.85, 1.25], "style": "closing_title", "max_chars": 12, "max_lines": 1},
+        "subtitle": {"kind": "text", "bbox": [3.25, 3.95, 6.85, 0.34], "style": "closing_subtitle", "max_chars": 24, "max_lines": 1},
+        "contact": {"kind": "text", "bbox": [3.25, 4.78, 6.85, 0.32], "style": "caption", "max_chars": 60, "max_lines": 1}
+      }
+    }
+  }
+}

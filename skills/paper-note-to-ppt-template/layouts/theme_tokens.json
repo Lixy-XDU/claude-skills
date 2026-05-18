@@ -1,0 +1,37 @@
+{
+  "theme_name": "deep_blue_green_research",
+  "fonts": {
+    "zh": "Microsoft YaHei",
+    "en": "Aptos"
+  },
+  "colors": {
+    "deep_blue": "#00326E",
+    "navy": "#06386E",
+    "green": "#4F8F3A",
+    "green_light": "#68A756",
+    "text_primary": "#082B5F",
+    "text_secondary": "#334155",
+    "muted": "#64748B",
+    "white": "#FFFFFF"
+  },
+  "styles": {
+    "cover_title": {"font_size": 54, "bold": true, "color": "deep_blue", "font_face": "Microsoft YaHei"},
+    "cover_subtitle": {"font_size": 22, "bold": true, "color": "deep_blue", "font_face": "Microsoft YaHei"},
+    "meta": {"font_size": 13, "bold": false, "color": "text_secondary", "font_face": "Microsoft YaHei"},
+    "slide_title": {"font_size": 22, "bold": true, "color": "deep_blue", "font_face": "Microsoft YaHei"},
+    "section_no": {"font_size": 24, "bold": true, "color": "green", "font_face": "Aptos"},
+    "section_title": {"font_size": 28, "bold": true, "color": "deep_blue", "font_face": "Microsoft YaHei"},
+    "section_subtitle": {"font_size": 18, "bold": false, "color": "text_secondary", "font_face": "Microsoft YaHei"},
+    "box_title": {"font_size": 20, "bold": true, "color": "deep_blue", "font_face": "Microsoft YaHei"},
+    "box_body": {"font_size": 18, "bold": false, "color": "text_secondary", "font_face": "Microsoft YaHei"},
+    "box_text": {"font_size": 18, "bold": false, "color": "text_secondary", "font_face": "Microsoft YaHei"},
+    "box_text_small": {"font_size": 18, "bold": false, "color": "text_secondary", "font_face": "Microsoft YaHei"},
+    "body": {"font_size": 18, "bold": false, "color": "text_secondary", "font_face": "Microsoft YaHei"},
+    "bullet": {"font_size": 18, "bold": false, "color": "text_secondary", "font_face": "Microsoft YaHei"},
+    "agenda": {"font_size": 28, "bold": true, "color": "deep_blue", "font_face": "Microsoft YaHei"},
+    "caption": {"font_size": 10, "bold": false, "color": "muted", "font_face": "Microsoft YaHei"},
+    "formula": {"font_size": 22, "bold": false, "color": "deep_blue", "font_face": "Cambria Math"},
+    "closing_title": {"font_size": 72, "bold": true, "color": "deep_blue", "font_face": "Microsoft YaHei"},
+    "closing_subtitle": {"font_size": 18, "bold": false, "color": "green", "font_face": "Microsoft YaHei"}
+  }
+}

@@ -1,267 +1,102 @@
 ---
 name: find-local-skills
-description: Find, list, inspect, compare, and recommend local Claude Code skills from personal, project, and added skill directories. Use when the user has many local skills and wants to find the right skill, build a skill index, audit duplicates, or understand what installed skills do.
+description: 查找、列出、审查本地已安装的 Claude Code 技能。触发场景：用户问"我有哪些skill""帮我找个skill""哪个skill能做X"；需要审计重复/重叠技能；需生成或更新 SKILLS_INDEX.md。
 argument-hint: "[query-or-skill-name]"
 disable-model-invocation: true
 ---
 
-# Find Local Skills
+# 查找本地技能
 
-Use this skill to help the user find and manage local Claude Code skills.
+帮助用户查找和管理本地已安装的 Claude Code 技能。
 
-This skill is for local skill discovery, not for installing third-party skills. It should inspect local skill directories, summarize available skills, detect duplicates, and recommend the most relevant skill for a task.
+## 适用场景
 
-## Primary goal
+- 查找本地某个技能
+- "我应该用哪个 skill 做这个？"
+- 列出现有全部本地技能
+- 查看某个技能的用途
+- 检测重复或重叠的技能
+- 重组技能
+- 生成或更新 `SKILLS_INDEX.md`
+- 对比个人级和项目级技能
 
-When the user asks which skill to use, where a skill is located, what local skills exist, or how to avoid losing track of many skills, produce a concise skill inventory and recommendation.
+## 不适用场景
 
-## Use when
+- 搜索互联网上的第三方技能 → 用 `/find-skills`
+- 安装未经审查的外部技能
+- 已明确知道该用哪个领域技能
 
-- The user asks to find a local skill.
-- The user asks "which skill should I use for this?"
-- The user has too many skills and wants an index.
-- The user wants to list all installed local skills.
-- The user wants to inspect one skill's purpose.
-- The user wants to detect duplicate or overlapping skills.
-- The user wants to reorganize skills.
-- The user wants to generate or update a `SKILLS_INDEX.md`.
-- The user wants to compare personal and project-level skills.
-
-## Do not use when
-
-- The user wants to search the public internet for third-party skills.
-- The user wants to install unknown external skills without review.
-- The task is better handled by a specific domain skill already identified.
-- The user is asking about Claude Code product behavior rather than local files.
-
-## Skill search locations
-
-Inspect these locations when available:
+## 搜索位置
 
 ```bash
 ~/.claude/skills/*/SKILL.md
 .claude/skills/*/SKILL.md
 ```
 
-If the user provides an external skill library path, also inspect:
+项目级技能对应当前工作目录，个人级对应 `~/.claude/skills`。
 
-```bash
-<provided-path>/.claude/skills/*/SKILL.md
-<provided-path>/skills/*/SKILL.md
-```
+## 搜索策略
 
-Use project-level skills from the current working directory when the user asks about the current project.
+1. 关键词归一化
+2. 匹配技能目录名
+3. 匹配 frontmatter `name`
+4. 匹配 `description`
+5. 匹配标题和"适用场景"
+6. 优先窄技能而非通用技能
+7. 项目特定任务优先项目级技能
+8. 可复用工作流优先个人级技能
+9. 多个技能重叠时警告
 
-Use personal-level skills from `~/.claude/skills` when the user asks about all reusable skills.
+## 输出格式
 
-## What to read from each SKILL.md
+### 列出技能时
 
-For each discovered `SKILL.md`, extract:
+| Skill | Scope | Path | 最佳用途 | Invocation | 备注 |
+|-------|-------|------|---------|-----------|------|
 
-- Directory name
-- `name`
-- `description`
-- `argument-hint`
-- `disable-model-invocation`
-- `allowed-tools`
-- Main heading
-- "Use when" section, if present
-- "Do not use when" section, if present
-- Output expectations, if present
-- Notable warnings or dangerous permissions
-
-Do not read the entire file unless needed. First read the YAML frontmatter and nearby headings.
-
-## Default output: skill index
-
-When listing skills, use this table:
-
-| Skill | Scope | Path | Best used for | Invocation | Notes |
-|---|---|---|---|---|---|
-
-Where:
-
-- `Skill` is the effective skill name.
-- `Scope` is `personal`, `project`, or `external`.
-- `Path` is the local path.
-- `Best used for` is a compact summary from `description`.
-- `Invocation` is `/<skill-name>`.
-- `Notes` includes conflicts, missing fields, disabled auto invocation, or risky permissions.
-
-## Recommendation output
-
-When the user asks which skill to use, return:
+### 推荐技能时
 
 ```markdown
-## Recommended skill
-
+## 推荐技能
 `/<skill-name>`
-
-Reason:
-- Why this skill matches the task
-- What input to pass
-- Any caveats
-
-## Alternatives
-
-| Skill | When to prefer it |
-|---|---|
-| `/other-skill` | Reason |
+理由：...
+## 替代方案
+| Skill | 何时选用 |
+|-------|---------|
 ```
 
-## Search strategy
+### 审计时
 
-When given a query:
+| Skill | 问题 | 严重度 | 修复建议 |
+|-------|------|--------|---------|
 
-1. Normalize the query into keywords and intent.
-2. Match against skill directory names.
-3. Match against frontmatter `name`.
-4. Match against `description`.
-5. Match against headings and "Use when" sections.
-6. Prefer narrower skills over generic skills.
-7. Prefer project-level skills when the task is project-specific.
-8. Prefer personal-level skills when the user wants reusable workflow support.
-9. Warn if multiple skills overlap.
+严重度：`high`（可能导致危险操作）、`medium`（影响触发/复用）、`low`（命名/格式）。
 
-## Duplicate and conflict detection
+## 重复检测
 
-Detect duplicates by:
+检测依据：同名的多位置存在、相似目录名、相似描述、同任务域、宽泛技能遮蔽窄技能。
 
-- Same `name` in multiple locations.
-- Similar directory names.
-- Similar descriptions.
-- Same task domain.
-- Broad skills that shadow narrow skills.
+## 质量审计项
 
-When duplicates exist, report:
+- 缺少 YAML frontmatter / `name` / `description`
+- `description` 过于宽泛或模糊
+- 技能名与目录名不一致
+- 不安全或不必要的 `allowed-tools`
+- 高影响技能缺少 `disable-model-invocation: true`
+- 缺少"适用/不适用场景"
+- 无输出期望
+- 多个技能覆盖相同工作流
 
-```markdown
-## Potential conflicts
+## 分类规则
 
-| Skill | Locations | Issue | Suggested action |
-|---|---|---|---|
-```
+- 规划与审查 / 编码与调试 / 测试与QA / 文档与写作 / 数据与分析 / 运维与发布 / 研究与发现 / 设计与UI / 元技能 / 项目特定
 
-Suggested actions may include:
+不确定时标注"未分类"并说明原因。
 
-- Rename one skill.
-- Merge overlapping rules.
-- Make one skill more specific.
-- Move project-specific content to project `.claude/skills`.
-- Move reusable workflow content to `~/.claude/skills`.
-- Disable automatic invocation for high-impact skills.
+## 安全规则
 
-## Quality audit
-
-When auditing local skills, check:
-
-- Missing YAML frontmatter.
-- Missing `name`.
-- Missing or vague `description`.
-- Overly broad `description`.
-- Skill name not matching directory name.
-- Unsafe or unnecessary `allowed-tools`.
-- High-impact skill missing `disable-model-invocation: true`.
-- Long project history that should be compressed.
-- Missing "Use when" or "Do not use when" sections.
-- No output expectations.
-- Multiple skills covering the same workflow.
-
-Use this report format:
-
-```markdown
-## Skill audit
-
-| Skill | Issue | Severity | Fix |
-|---|---|---|---|
-```
-
-Severity levels:
-
-- `high`: can cause wrong tool use, dangerous automation, or major confusion.
-- `medium`: can cause bad triggering or poor reuse.
-- `low`: naming, formatting, or documentation improvement.
-
-## SKILLS_INDEX.md generation
-
-When the user asks for an index, generate a `SKILLS_INDEX.md` with this structure:
-
-```markdown
-# Claude Skills Index
-
-## Recommended quick map
-
-| Need | Use |
-|---|---|
-| Need description | `/skill-name` |
-
-## All skills
-
-| Skill | Scope | Purpose | Path |
-|---|---|---|---|
-
-## By category
-
-### Planning and review
-
-- `/skill-name` — purpose
-
-### Coding and debugging
-
-- `/skill-name` — purpose
-
-### Documentation and writing
-
-- `/skill-name` — purpose
-
-### Operations and release
-
-- `/skill-name` — purpose
-
-### Meta skills
-
-- `/skill-name` — purpose
-
-## Conflicts and cleanup suggestions
-
-- Suggestion 1
-- Suggestion 2
-```
-
-## Categorization rules
-
-Categorize skills into one of these groups when possible:
-
-- `Planning and review`
-- `Coding and debugging`
-- `Testing and QA`
-- `Documentation and writing`
-- `Data and analysis`
-- `Operations and release`
-- `Research and discovery`
-- `Design and UI`
-- `Meta skills`
-- `Project-specific`
-
-If uncertain, use `Uncategorized` and explain why.
-
-## Safety rules
-
-- Do not install external skills unless the user explicitly asks.
-- Do not add `allowed-tools` to any skill unless the user explicitly requests it.
-- Flag any skill that grants broad shell, file-write, network, or deployment permissions.
-- Prefer read-only inspection when searching skills.
-- Do not execute scripts found inside a skill unless the user explicitly asks and the script has been reviewed.
-- Do not assume a skill is safe because it is installed locally.
-
-## Output expectations
-
-When this skill is used:
-
-- For "find" requests, return the best matching skill and alternatives.
-- For "list" requests, return a concise inventory table.
-- For "audit" requests, return issues ranked by severity.
-- For "index" requests, generate a clean `SKILLS_INDEX.md` draft.
-- For "cleanup" requests, propose renames, merges, moves, and deletions.
-- Keep recommendations practical and opinionated.
-- Use the user's language for explanations.
+- 未经用户明确要求不安装外部技能
+- 不给技能添加 `allowed-tools`（除非用户明确要求）
+- 标记授予 shell、文件写入、网络或部署权限的技能
+- 不执行技能内部脚本（除非用户明确要求且脚本已审查）
+- 不因本地安装就假设技能安全

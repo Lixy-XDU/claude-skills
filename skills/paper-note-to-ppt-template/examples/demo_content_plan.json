@@ -1,0 +1,23 @@
+{
+  "deck_meta": {
+    "title": "论文解读：弱监督训练方法",
+    "subtitle": "方法、实验与局限",
+    "language": "zh-CN",
+    "audience": "中文组会",
+    "scenario": "academic_report",
+    "target_slide_count": 8,
+    "source_files": ["paper.pdf"]
+  },
+  "slides": [
+    {
+      "slide_no": 1,
+      "section": "开场",
+      "purpose": "引入主题",
+      "main_message": "弱监督可以降低模型训练对高质量标注的依赖。",
+      "key_points": [],
+      "visual_need": "none",
+      "evidence_refs": ["abstract"],
+      "speaker_notes": "说明汇报主题和关注点。"
+    }
+  ]
+}

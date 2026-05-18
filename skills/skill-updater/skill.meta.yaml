@@ -6,7 +6,7 @@ status: active
 version: 0.1.0
 updated: 2026-05-14
 
-purpose: Check for and apply updates from claude-skills and claude-vaults GitHub repositories with a single command.
+purpose: 从 claude-skills GitHub 仓库一键检查并拉取最新技能更新，同步 CLAUDE.md 模板。
 
 relations:
   coordinates:

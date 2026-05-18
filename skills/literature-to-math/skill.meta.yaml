@@ -3,10 +3,10 @@ title: 文献数学方法提炼器
 category: 数学与方法库
 scope: personal
 status: active
-version: 0.1.0
-updated: 2026-05-12
+version: 0.2.0
+updated: 2026-05-15
 
-purpose: 从学术文献 PDF 中提取数学方法，调用 /math-method-lib 结构化写入 Obsidian 知识库。
+purpose: 从学术文献中提取数学方法，调用 /math-method-lib 结构化写入 Obsidian 知识库。默认 scan-only 模式（只扫描不写库），用户确认后进入 write-vault 模式。
 
 relations:
   coordinates: []
@@ -25,5 +25,5 @@ relations:
   overlaps_with: []
 
 notes:
+  - v0.2.0 重构：双模式（scan-only / write-vault）、固定 method-context 格式、硬性去重规则、中断条件、批量确认表格。
   - 依赖 math-method-lib 完成 16 节模板生成。PDF 文本提取委托给 pdf-extract（三级策略：PyMuPDF → qpdf 解密 → OCR）。
-  - category 由 skill-graph 通过关键词推断为"数学与方法库"。

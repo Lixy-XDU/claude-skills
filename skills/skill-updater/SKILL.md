@@ -1,38 +1,37 @@
 ---
 name: skill-updater
-description: Update installed Claude Code skills from the claude-skills GitHub repository. Use when the user wants to check for updates, pull the latest skills, sync with upstream, or run `/skill-updater`.
+description: 从 claude-skills GitHub 仓库检查并拉取最新技能更新。触发场景：用户说"更新skills""检查更新""同步skills""/skill-updater"；或间隔一段时间未使用后准备开始新工作。
 argument-hint: ""
 disable-model-invocation: true
 ---
 
-# Skill Updater
+# 技能更新器
 
-Check for and apply updates from the claude-skills GitHub repository.
+从 claude-skills GitHub 仓库拉取最新更新。
 
-## Use when
+## 适用场景
 
-- User asks "update skills", "check for updates", "sync skills"
-- User runs `/skill-updater`
-- User wants the latest version of installed skills
-- After a gap in usage, before starting new work
+- 用户说"更新 skills""检查更新""同步 skills"
+- 用户运行 `/skill-updater`
+- 间隔一段时间后准备开始新工作前
 
-## Do not use when
+## 不适用场景
 
-- User wants to modify or create skills (use `/skill-creator` or `/skill-distiller`)
-- User wants to find new skills (use `/find-skills`)
-- Initial installation (use README instructions)
+- 用户要修改或创建技能 → 用 `/skill-creator`
+- 用户要找新技能 → 用 `/find-skills`
+- 初次安装 → 按 README 说明操作
 
-## Core rules
+## 核心规则
 
-- Only `git fetch` + `git pull` — never force-push, never reset, never delete
-- Update `~/.claude/CLAUDE.md` from repo template after pull
-- Rebuild `SKILL_GRAPH.html` after skill changes
-- Do NOT overwrite `config.local.yaml` under any circumstances
-- Report what changed (commit range) after update
+- 只 `git fetch` + `git pull`，绝不 force-push、不 reset、不删除
+- 拉取后更新 `~/.claude/CLAUDE.md`（从仓库模板）
+- 技能变更后重建 `SKILL_GRAPH.html`
+- **绝不覆盖 `config.local.yaml`**
+- 更新后报告变更范围（commit range）
 
-## Workflow
+## 工作流
 
-### 1. Check skills repo
+### 1. 检查技能仓库
 
 ```bash
 SKILLS_DIR="$HOME/.claude/skills"
@@ -43,51 +42,47 @@ if [ -d "$SKILLS_DIR/.git" ]; then
   git fetch origin
   BEHIND=$(git rev-list HEAD..origin/master --count)
   if [ "$BEHIND" -gt 0 ]; then
-    echo "Found $BEHIND new commit(s). Pulling..."
+    echo "发现 $BEHIND 个新提交。正在拉取..."
     git log HEAD..origin/master --oneline
     git pull origin master
     HAS_SKILL_UPDATES=true
   else
-    echo "Skills: already up to date."
+    echo "技能：已是最新。"
   fi
 else
-  echo "Skills directory is not a git repo — skipping."
+  echo "技能目录不是 git 仓库，跳过。"
 fi
 ```
 
-### 2. Update CLAUDE.md
-
-If skills were updated, copy the latest template:
+### 2. 更新 CLAUDE.md
 
 ```bash
 if [ "$HAS_SKILL_UPDATES" = true ]; then
   if [ -f "$SKILLS_DIR/CLAUDE.md" ]; then
     cp "$HOME/.claude/CLAUDE.md" "$HOME/.claude/CLAUDE.md.bak-$(date +%Y%m%d%H%M%S)"
     cp "$SKILLS_DIR/CLAUDE.md" "$HOME/.claude/CLAUDE.md"
-    echo "CLAUDE.md updated (old version backed up)."
+    echo "CLAUDE.md 已更新（旧版本已备份）。"
   fi
 fi
 ```
 
-### 3. Rebuild skill graph
+### 3. 重建技能图
 
 ```bash
 GRAPH_SCRIPT="$SKILLS_DIR/skill-graph/scripts/generate_skill_graph_html.py"
 if [ -f "$GRAPH_SCRIPT" ]; then
   python "$GRAPH_SCRIPT" --graph-only 2>/dev/null || py "$GRAPH_SCRIPT" --graph-only 2>/dev/null
-  echo "SKILL_GRAPH.html rebuilt."
+  echo "SKILL_GRAPH.html 已重建。"
 fi
 ```
 
-### 4. Report results
+### 4. 报告结果
 
-After all steps, summarize:
-- Skills: up to date / updated from `<old>` to `<new>`
-- CLAUDE.md: unchanged / updated
+汇总：技能是否更新、CLAUDE.md 是否变更。
 
-## Safety rules
+## 安全规则
 
-- Never run `git push` — this skill is read-only from GitHub's perspective
-- Never delete or overwrite `config.local.yaml`
-- Back up CLAUDE.md before overwriting
-- If `git pull` fails (merge conflict), report the error and stop — do not attempt resolution
+- 绝不 `git push`，此技能只读
+- 绝不删除或覆盖 `config.local.yaml`
+- 覆盖 CLAUDE.md 前先备份
+- `git pull` 失败（合并冲突）时报错并停止，不尝试解决
