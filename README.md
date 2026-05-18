@@ -90,6 +90,16 @@ tools:
 
 无需手动管理 git。
 
+## MATLAB Agentic Toolkit
+
+MATLAB 技能（`matlab-*` 命名空间）由 [MATLAB Agentic Toolkit](https://github.com/matlab/matlab-agentic-toolkit) 插件系统管理，不包含在本仓库中。
+
+```powershell
+git clone https://github.com/matlab/matlab-agentic-toolkit.git $env:USERPROFILE\.matlab\agentic-toolkits
+```
+
+安装后运行 `/toolkit:matlab-agentic-toolkit-setup` 完成 MCP 服务器和 skills 配置。
+
 ## 贡献
 
 本仓库的 master 副本位于作者本机（私有），所有更新以本机为准，经脱密后推送至此。
